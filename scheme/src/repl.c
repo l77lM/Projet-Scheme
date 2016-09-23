@@ -126,8 +126,9 @@ int main ( int argc, char *argv[] ) {
         /* puis d'en lire une autre */
         /* METTRE EN COMMENTAIRE LES DEUX LIGNES SUIVANTES */
         /* POUR PASSER A L'INCREMENT 1 */
-        printf("%s\n", input );
-        continue;
+
+        /*printf("%s\n", input );
+        continue;*/
 
         here  = 0;
         sexpr = sfs_read( input, &here );

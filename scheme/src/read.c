@@ -300,28 +300,93 @@ object sfs_read( char *input, uint *here ) {
             return sfs_read_pair( input, here );
         }
     }
+
+    else if ( input[*here] == ')' ) {
+            (*here)++;
+            return nil;
+    }
+
     else {
         return sfs_read_atom( input, here );
     }
 }
 
-object sfs_read_atom( char *input, uint *here ) {
+object sfs_read_atom( char *input, uint *here ) {      /* a verifier !!! */
 
 	object atom = NULL;
 	char car1 = input[(*here)];
 	char car2 = input[(*here)+1];
-	if (   ( car1=='+'||car1=='-')  &&  ( car2 != ' ' )   )  ||  ('0' =< car1 =< '9')   )
-	{
+	int nb;
 
-		atome=make_integer( atoi()         // make_number?
+	char* mot="";
+	char* ptr;
+	int cpt=0;
+
+
+
+	if (  ( ( car1=='+'||car1=='-')  &&  ( car2 != ' ' ) )     ||  ( ('0' <= car1) && ( car1 <= '9')   )  )
+	{
+        nb= strtol( (input+(*here)) , &ptr, 10);
+        (*here)=ptr-input;
+		atom=make_integer(nb);                   /* make_number?*/
+	}
+
+
+	else if ( car1=='"' )
+    {
+        /*  sscanf((input+*(here)),"%s",mot);
+        mot = strtok( mot , '"');*/
+        cpt+=1;
+        while ( car2 =! '"' )
+        {
+            realloc(mot,(1+cpt)*sizeof(char));
+            mot[cpt-1]=car2;
+            mot[cpt]='\0';
+            cpt+=1;
+            car2=input[(*here)+cpt];
+        }
+        (*here)=(*here)+cpt;
+        atom=make_string(mot);
+    }
+
+
+    else if ( car1=='#' )
+    {
+        if (car2=='t')
+        {
+            atom=true;
+        }
+        else if ( car2=='f')
+        {
+            atom=false;
+        }
+        else
+        {
+
+        }
+    }
+
+
+    else
+    {
+        sscanf(input+*(here),"%s",mot);
+        mot = strtok( mot , ')');
+        *(here)=*(here)+strlen(mot);
+        atom=make_symbol(mot);
+    }
+
 
 	return atom;
 }
+
+
 
 object sfs_read_pair( char *stream, uint *i ) {
 
 	object pair = NULL;
 	pair=make_object(SFS_PAIR);
+	(pair->this).pair.car= sfs_read(stream,i);
+	(pair->this).pair.cdr= sfs_read(stream,i);
 
 
 	return pair;
