@@ -18,7 +18,10 @@ void sfs_print_atom( object o ) {
 }
 
 void sfs_print_pair( object o ) {
-
+    printf("%c",'(');
+    sfs_print( (o -> pair).car );
+    sfs_print( (o -> pair).cdr );
+    printf("%c",')');
     return;
 }
 

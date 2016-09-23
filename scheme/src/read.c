@@ -70,7 +70,7 @@ char* first_usefull_char(char* line) {
  * Les parentheses dans des chaines et les caracteres Scheme #\( et #\)
  * ne sont pas comptes.
  *
- * Si le compte devient zéro et que 
+ * Si le compte devient zéro et que
  *        - la ligne est fini, la fonction retourne S_OK
  * 				- la ligne n'est pas fini la fonction retourne S_KO
  *
@@ -168,7 +168,7 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
             }
         }
 
-        /* si la ligne est inutile 
+        /* si la ligne est inutile
         	=> on va directement à la prochaine iteration */
         if (first_usefull_char(chunk) == NULL) {
             continue;
@@ -306,14 +306,14 @@ object sfs_read( char *input, uint *here ) {
 }
 
 object sfs_read_atom( char *input, uint *here ) {
-	
+
 	object atom = NULL;
 	char car1 = input[(*here)];
 	char car2 = input[(*here)+1];
 	if (   ( car1=='+'||car1=='-')  &&  ( car2 != ' ' )   )  ||  ('0' =< car1 =< '9')   )
 	{
-				
-		atome=make_integer(          // make_number?
+
+		atome=make_integer( atoi()         // make_number?
 
 	return atom;
 }
@@ -322,7 +322,7 @@ object sfs_read_pair( char *stream, uint *i ) {
 
 	object pair = NULL;
 	pair=make_object(SFS_PAIR);
-		
+
 
 	return pair;
 }

@@ -21,11 +21,14 @@ object make_object( uint type ) {
     return t;
 }
 
+
+
+
 object make_nil( void ) {
 
     object t = make_object( SFS_NIL );
 
-    t->this.special = NULL; 
+    t->this.special = NULL;
 
     return t;
 }
@@ -35,16 +38,18 @@ object make_boolean( uint test ) {
 
 	object t = make_object( SFS_BOOLEAN );
 
-	if (test==1) { t->this.special = false; }   
+	if (test==1) { t->this.special = false; }
 
-	if (test==0) { t->this.special = true; }   
+	if (test==0) { t->this.special = true; }
 
 	else {
-		printf("\nBooleen non reconnu\n");	
+		printf("\nBooleen non reconnu\n");
 		return NULL ;
 	}
 	return t;
 }
+
+
 
 object init_boolean( void ) {
 
@@ -55,6 +60,8 @@ object init_boolean( void ) {
 	return t;
 }
 
+
+
 object make_symbol(char* symb) {
 
 	object t = make_object( SFS_SYMBOL );
@@ -64,6 +71,8 @@ object make_symbol(char* symb) {
 	return t;
 }
 
+
+
 object make_integer(int N) {
 
 	object t = make_object( SFS_NUMBER );
@@ -71,10 +80,12 @@ object make_integer(int N) {
 	t->type = SFS_NUMBER;
 	(t->this.number).numtype = NUM_INTEGER;
 	(t->this.number).this.integer = N;
-		
+
 
 	return t;
 }
+
+
 
 object make_real(double X) {
 
@@ -83,10 +94,12 @@ object make_real(double X) {
 	t->type = SFS_NUMBER;
 	(t->this.number).numtype = NUM_REAL;
 	(t->this.number).this.real = X;
-		
+
 
 	return t;
 }
+
+
 
 object make_character(char car) {
 
@@ -97,6 +110,8 @@ object make_character(char car) {
 	return t;
 }
 
+
+
 object make_string(char* str) {
 
 	object t = make_object( SFS_STRING );
@@ -105,6 +120,8 @@ object make_string(char* str) {
 
 	return t;
 }
+
+
 
 object make_pair(char* symb) {
 
