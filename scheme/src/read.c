@@ -314,11 +314,14 @@ object sfs_read( char *input, uint *here ) {
 object sfs_read_atom( char *input, uint *here ) {      /* a verifier !!! */
 
 	object atom = NULL;
+
 	char car1 = input[(*here)];
 	char car2 = input[(*here)+1];
 	int nb;
 
-	char* mot="";
+    char* mot=NULL;
+    char mot1[1000];
+
 	char* ptr;
 	int cpt=0;
 
@@ -334,20 +337,22 @@ object sfs_read_atom( char *input, uint *here ) {      /* a verifier !!! */
 
 	else if ( car1=='"' )
     {
-        /*  sscanf((input+*(here)),"%s",mot);
-        mot = strtok( mot , '"');*/
-        cpt+=1;
-        while ( car2 =! '"' )
+        (*here)++;
+        while ( input[(*here)] != '"' &&  input[(*here)-1] != '\\')             /*  Pas tout à fait au point */
         {
-            realloc(mot,(1+cpt)*sizeof(char));
-            mot[cpt-1]=car2;
-            mot[cpt]='\0';
-            cpt+=1;
-            car2=input[(*here)+cpt];
+            if ( input[(*here)-1] != '\\'  &&  input[(*here)] != '\\')
+            {
+                mot1[cpt++]=input[(*here)++];
+            }
+            else
+            {
+                (*here)++;
+            }
         }
-        (*here)=(*here)+cpt;
-        atom=make_string(mot);
+        (*here)++;
+        atom=make_string(mot1);
     }
+
 
 
     else if ( car1=='#' )
@@ -356,13 +361,9 @@ object sfs_read_atom( char *input, uint *here ) {      /* a verifier !!! */
         {
             atom=true;
         }
-        else if ( car2=='f')
+        else if (car2=='f')
         {
             atom=false;
-        }
-        else
-        {
-
         }
     }
 
@@ -385,7 +386,9 @@ object sfs_read_pair( char *stream, uint *i ) {
 
 	object pair = NULL;
 	pair=make_object(SFS_PAIR);
+
 	(pair->this).pair.car= sfs_read(stream,i);
+
 	(pair->this).pair.cdr= sfs_read(stream,i);
 
 

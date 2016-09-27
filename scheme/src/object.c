@@ -66,7 +66,7 @@ object make_symbol(char* symb) {
 
 	object t = make_object( SFS_SYMBOL );
 
-	strcpy(t->this.symbol , symb);
+	strcpy( t->this.symbol , symb);
 
 	return t;
 }
@@ -116,7 +116,7 @@ object make_string(char* str) {
 
 	object t = make_object( SFS_STRING );
 
-	strcpy(t->this.string , str);
+	strncpy((t->this).string , str , strlen(str));
 
 	return t;
 }
@@ -127,8 +127,8 @@ object make_pair(char* symb) {
 
 	object t = make_object( SFS_PAIR );
 
-	t->this.pair.car = nil ;
-	t->this.pair.cdr = nil ;
+	(t->this).pair.car = nil ;
+	(t->this).pair.cdr = nil ;
 
 	return t;
 }

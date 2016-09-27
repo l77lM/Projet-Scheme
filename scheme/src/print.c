@@ -16,29 +16,66 @@ void sfs_print_atom( object o ) {
     switch (o->type)
     {
         case SFS_NUMBER:
-            printf("%d",(o->this).number);
+            switch (((o->this).number).numtype)
+            {
+                case NUM_REAL:
+                    printf("%f",((o->this).number).this.real);
+                    break;
+
+                case NUM_INTEGER:
+                    printf("%d",((o->this).number).this.integer);
+                    break;
+
+                case NUM_UINTEGER:
+                    printf("%u",((o->this).number).this.integer);
+                    break;
+
+                case NUM_COMPLEX:
+                    printf("COMPLEX pas encore defini\n");
+                    break;
+
+                case NUM_UNDEF:
+                    printf("UNDEF pas encore defini\n");
+                    break;
+
+                case NUM_PINFTY:
+                    printf("PINFTY pas encore defini\n");
+                    break;
+
+                case NUM_MINFTY:
+                    printf("MINFTY pas encore defini\n");
+                    break;
+            }
+
             break;
 
         case SFS_CHARACTER:
             printf("%c",(o->this).character);
             break;
 
+
         case SFS_STRING:
+            printf("%c",'"');
             printf("%s",(o->this).string);
+            printf("%c",'"');
             break;
+
 
         case SFS_NIL:
             printf("%s","()");
             break;
 
         case SFS_BOOLEAN:
-            if (  ((o->this).special)==true )
+            if ( o==true )
             {
                 printf("%s","#t");
             }
-            else
+            else if ( o==false )
             {
                 printf("%s","#f");
+            }
+            else
+            {
             }
             break;
 
@@ -52,6 +89,7 @@ void sfs_print_atom( object o ) {
 void sfs_print_pair( object o ) {     /* a verifier !!!!!! */
     printf("%c",'(');
     sfs_print( (o -> this).pair.car );
+    printf(" ");
     sfs_print( (o -> this).pair.cdr );
     printf("%c",')');
     return;
