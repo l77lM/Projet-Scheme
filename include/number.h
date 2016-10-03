@@ -1,4 +1,3 @@
-
 /**
  * @file number.h
  * @author François Cayre <cayre@yiking.(null)>
@@ -26,11 +25,13 @@ extern "C" {
 #define NUM_PINFTY   0x05
 #define NUM_MINFTY   0x06
 
-typedef struct num_t {
+typedef struct num_t
+{
 
     uint numtype;
 
-    union {
+    union
+    {
 
         double       real;
         int       integer;

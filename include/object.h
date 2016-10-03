@@ -1,4 +1,3 @@
-
 /**
  * @file object.h
  * @author François Cayre <cayre@yiking.(null)>
@@ -18,18 +17,21 @@ extern "C" {
 #include "number.h"
 
 
-typedef struct object_t {
+typedef struct object_t
+{
 
     uint type;
 
-    union {
+    union
+    {
 
         num              number;
         char             character;
         string           string;
         string           symbol;
 
-        struct pair_t {
+        struct pair_t
+        {
             struct object_t *car;
             struct object_t *cdr;
         }                pair;

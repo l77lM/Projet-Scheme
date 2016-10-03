@@ -1,4 +1,3 @@
-
 /**
  * @file read.c
  * @author François Cayre <cayre@yiking.(null)>
@@ -18,12 +17,15 @@
 
 
 
-void flip( uint *i ) {
+void flip( uint *i )
+{
 
-    if ( *i == FALSE ) {
+    if ( *i == FALSE )
+    {
         *i = TRUE;
     }
-    else {
+    else
+    {
         *i = FALSE;
     }
 }
@@ -34,23 +36,28 @@ void flip( uint *i ) {
  * @brief retourne un pointeur sur le premier caractere utile dans line
  * ou NULL si line ne contient que des espaces et des commentaires
  */
-char* first_usefull_char(char* line) {
+char* first_usefull_char(char* line)
+{
 
     int i=0;
-    if (line == NULL) {
+    if (line == NULL)
+    {
         return NULL;
     }
     i = 0;
     /* on saute les espaces */
-    while(line[i] != '\0' && isspace(line[i])) {
+    while(line[i] != '\0' && isspace(line[i]))
+    {
         i++;
     }
     /* si fin de ligne => ligne inutile */
-    if(line[i] == '\0') {
+    if(line[i] == '\0')
+    {
         return NULL;
     }
     /* si premier caractere non espace est ';' => ligne inutile */
-    if(line[i] == ';') {
+    if(line[i] == ';')
+    {
         return NULL;
     }
     return line + i; /* ligne utile */
@@ -95,7 +102,8 @@ char* first_usefull_char(char* line) {
  * @pre input doit etre prealablement alloue en memoire, de taille BIGSTRING
  */
 
-typedef enum {
+typedef enum
+{
     NOTHING,        /* rien n'a ete trouve encore.. */
     STRING_ATOME,   /* la premiere trouvee dans la ligne semble etre un atome */
     BASIC_ATOME,    /* la premiere trouvee dans la ligne semble etre d'une chaine */
@@ -103,7 +111,8 @@ typedef enum {
     FINISHED        /* on a trouve une S-Expr bien formee */
 } EXPRESSION_TYPE_T;
 
-uint  sfs_get_sexpr( char *input, FILE *fp ) {
+uint  sfs_get_sexpr( char *input, FILE *fp )
+{
     int       parlevel = 0;
     uint      in_string = FALSE;
     uint      s = 0;
@@ -118,13 +127,15 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
     parlevel = 0;
     memset( input, '\0', BIGSTRING );
 
-    do {
+    do
+    {
         ret = NULL;
         chunk=k;
         memset( chunk, '\0', BIGSTRING );
 
         /* si en mode interactif*/
-        if ( stdin == fp ) {
+        if ( stdin == fp )
+        {
             uint nspaces = 2*parlevel;
 
             init_string( sfs_prompt );
@@ -134,12 +145,14 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
                de ce niveau (un peu à la python)*/
             sprintf( sfs_prompt, "SFS:%u > ", parlevel );
 
-            for ( i= 0; i< nspaces; i++ ) {
+            for ( i= 0; i< nspaces; i++ )
+            {
                 sfs_prompt[strlen(sfs_prompt)] = ' ';
             }
 
             /* si sur plusieurs lignes, le \n équivaut à un espace*/
-            if (nspaces>0) {
+            if (nspaces>0)
+            {
                 input[strlen(input)+1] = '\0';
                 input[strlen(input)] = ' ';
             }
@@ -151,12 +164,15 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
 
         }
         /*si en mode fichier*/
-        else {
+        else
+        {
             ret = fgets( chunk, BIGSTRING, fp );
 
-            if ( NULL == ret ) {
+            if ( NULL == ret )
+            {
                 /* fin de fichier...*/
-                if ( parlevel != 0 ) {
+                if ( parlevel != 0 )
+                {
                     WARNING_MSG( "Parse error: missing ')'" );
                     return S_KO;
                 }
@@ -165,7 +181,8 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
 
             if (strlen(chunk) == BIGSTRING-1
                     && chunk[BIGSTRING-1] != '\n'
-                    && !feof(fp)) {
+                    && !feof(fp))
+            {
                 WARNING_MSG( "Too long line for this interpreter!" );
                 return S_KO;
             }
@@ -173,77 +190,98 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
 
         /* si la ligne est inutile
         	=> on va directement à la prochaine iteration */
-        if (first_usefull_char(chunk) == NULL) {
+        if (first_usefull_char(chunk) == NULL)
+        {
             continue;
         }
 
 
         s = strlen( chunk );
 
-        if ( s > 0 ) {
-            if (strlen(input) + s > BIGSTRING-1 ) {
+        if ( s > 0 )
+        {
+            if (strlen(input) + s > BIGSTRING-1 )
+            {
                 WARNING_MSG( "Too long a S-expression for this interpreter!" );
                 return S_KO;
             }
 
-            for ( i = 0; i< strlen(chunk); i++ ) {
+            for ( i = 0; i< strlen(chunk); i++ )
+            {
                 /* si la fin de la ligne chunk est inutile,
                    on ajoute un espace dans input et on sort de la boucle*/
-                if ( in_string == FALSE && first_usefull_char(chunk + i) == NULL ) {
+                if ( in_string == FALSE && first_usefull_char(chunk + i) == NULL )
+                {
                     chunk[i]='\0';
                     input[strlen(input)] = ' ';
                     break;
                 }
 
 
-                switch(chunk[i]) {
+                switch(chunk[i])
+                {
                 case '(':
                     if (in_string == FALSE
-                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) ) {
+                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) )
+                    {
                         parlevel++;
                         typeOfExpressionFound = S_EXPR_PARENTHESIS;
                     }
                     break;
                 case ')':
                     if ( in_string == FALSE
-                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) ) {
+                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) )
+                    {
                         parlevel--;
-                        if (parlevel == 0 ) {
+                        if (parlevel == 0 )
+                        {
                             typeOfExpressionFound = FINISHED;
                         }
-                        if ( parlevel < 0 ) {
+                        if ( parlevel < 0 )
+                        {
                             WARNING_MSG( "Parse error : cannot start with ')'" );
                             return S_KO;
                         }
                     }
                     break;
                 case '"':
-                    if ( i<2 || chunk[i-1] != '\\' ) {
-                        if ( in_string == FALSE ) {
-                            if(typeOfExpressionFound == BASIC_ATOME) {
+                    if ( i<2 || chunk[i-1] != '\\' )
+                    {
+                        if ( in_string == FALSE )
+                        {
+                            if(typeOfExpressionFound == BASIC_ATOME)
+                            {
                                 WARNING_MSG("Parse error: invalid string after atom : '%s'", chunk+i);
                                 return S_KO;
                             }
                             in_string = TRUE;
-                            if(typeOfExpressionFound != S_EXPR_PARENTHESIS) {
+                            if(typeOfExpressionFound != S_EXPR_PARENTHESIS)
+                            {
                                 typeOfExpressionFound = STRING_ATOME;
                             }
                         }
-                        else {
+                        else
+                        {
                             in_string = FALSE;
-                            if(typeOfExpressionFound == STRING_ATOME) {
+                            if(typeOfExpressionFound == STRING_ATOME)
+                            {
                                 typeOfExpressionFound = FINISHED;
                             }
                         }
                     }
                     break;
                 default:
-                    if(in_string == FALSE) {
-                        if(isspace(chunk[i])) {
-                            if(typeOfExpressionFound == BASIC_ATOME) {
+                    if(in_string == FALSE)
+                    {
+                        if(isspace(chunk[i]))
+                        {
+                            if(typeOfExpressionFound == BASIC_ATOME)
+                            {
                                 typeOfExpressionFound = FINISHED;
                             }
-                        } else if(typeOfExpressionFound != S_EXPR_PARENTHESIS) {
+                        }
+                        else if(typeOfExpressionFound != S_EXPR_PARENTHESIS)
+                        {
                             typeOfExpressionFound = BASIC_ATOME;
                         }
                     }
@@ -251,13 +289,17 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
                 }
 
 
-                if(typeOfExpressionFound == FINISHED) {
+                if(typeOfExpressionFound == FINISHED)
+                {
                     char *first_useful = first_usefull_char(chunk + i + 1);
-                    if( first_useful != NULL) {
-                        if(*first_useful == ')' ) {
+                    if( first_useful != NULL)
+                    {
+                        if(*first_useful == ')' )
+                        {
                             WARNING_MSG( "Parse error: too many closing parenthesis')'" );
                         }
-                        else {
+                        else
+                        {
                             WARNING_MSG("Parse error: invalid trailing chars after S-Expr : '%s'", chunk+i);
                         }
                         return S_KO;
@@ -267,22 +309,26 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
                 /* recopie char par char*/
                 input[strlen(input)] = chunk[i];
             }
-            if(in_string == TRUE) {
+            if(in_string == TRUE)
+            {
                 WARNING_MSG( "Parse error: non terminated string on line %s", chunk );
                 return S_KO;
             }
         }
 
 
-        if ( parlevel > 0 && fp != stdin ) {
-            if ( feof( fp ) ) {
+        if ( parlevel > 0 && fp != stdin )
+        {
+            if ( feof( fp ) )
+            {
                 WARNING_MSG( "Parse error: missing ')'" );
                 return S_KO;
             }
 
             if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = ' ';
         }
-    } while ( parlevel > 0 );
+    }
+    while ( parlevel > 0 );
 
     /* Suppression des espaces restant a la fin de l'expression, notamment le dernier '\n' */
     while (isspace(input[strlen(input)-1])) input[strlen(input)-1] = '\0';
@@ -291,186 +337,215 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
 }
 
 
-object sfs_read( char *input, uint *here ) {
-	char car1 = input[(*here)];
-		
-    while ((car1==' ')|| (car1=='\t')||(car1=='\n'))
-	{
-		(*here)++;
-		car1 = input[(*here)];
-	}
+object sfs_read( char *input, uint *here )
+{
+    char car1 = input[(*here)];
 
-    if ( input[*here] == '(' ) {
-    	
-        if ( input[(*here)+1] == ')' ) {
+    while ((car1==' ')|| (car1=='\t')||(car1=='\n'))
+    {
+        (*here)++;
+        car1 = input[(*here)];
+    } /*Permet d'éliminer les espaces et tabulations qui generaient la lecture du code*/
+
+    if ( input[*here] == '(' )
+    {
+
+        if ( input[(*here)+1] == ')' )
+        {
             *here += 2;
             return nil;
         }
-        else {
-           *here += 1;
-           return sfs_read_pair( input, here );
+        else
+        {
+            *here += 1;
+            return sfs_read_pair( input, here );
         }
     }
 
-   else {
-   	
-   	
+    else
+    {
+
+
         return sfs_read_atom( input, here );
     }
 }
 
-object sfs_read_atom( char *input, uint *here ) {      /* a verifier !!! */
+object sfs_read_atom( char *input, uint *here )
+{
 
-	object atom = NULL;
+    object atom = NULL;
 
-	char car1 = input[(*here)];
-	char car2 = input[(*here)+1];
-	char car3 = input[(*here)+2];
-	long int nb;
+    char car1 = input[(*here)];
+    char car2 = input[(*here)+1];
+    char car3 = input[(*here)+2];
+    long int nb;
 
-    	/*char* mot=NULL; */
-	char mot[1000];
-    	
 
-	char* ptr;
-	int cpt=0;
-	while  (  (car1=='\t') ||  (car1==' ') || (car1=='\n'))
-	{
-		(*here)++;
-		car1=car2;
-		car2=car3;
-		car3=input[(*here)+2];
-	}
 
-	
 
-	if (  (    ( (car1=='+'||car1=='-') && (car2!='\0') )   &&  ( car2 != ' ' ) )     ||  ( ('0' <= car1) && ( car1 <= '9')   )  )
-	{
-        nb = strtol( (input+(*here)) , &ptr, 10);
-		
+    while  (  (car1=='\t') ||  (car1==' ') || (car1=='\n'))
+    {
+        (*here)++;
+        car1=car2;
+        car2=car3;
+        car3=input[(*here)+2];
+    }   /*Permet d'éliminer les espaces et tabulations qui generaient la lecture du code*/
+
+
+
+    if (  (    ( (car1=='+'||car1=='-') && (car2!='\0') )   &&  ( car2 != ' ' ) )     ||  ( ('0' <= car1) && ( car1 <= '9')   )  )
+    {
+        char* ptr;
+
+        nb = strtol( (input+(*here)), &ptr, 10);
+
         (*here)=ptr-input;
-       
-        if (errno == ERANGE ){
-        	
-        	atom=make_infty(nb);
-        	
+
+        if (errno == ERANGE )
+        {
+
+            atom=make_infty(nb);
+
         }
-        if (errno != ERANGE) {
-        	
-        	atom=make_integer(nb);
+        if (errno != ERANGE)
+        {
+
+            atom=make_integer(nb);
         }
         errno=0;
-        
-        	                 
-	}
 
 
-	else if ( car1=='"' )  /*allocation simple a modifier de mot[100]*/
-   	{
-        	(*here)++;
-        	char* lu=malloc(sizeof(char));
-       		char  test;
-       		char test0='0';
-       		char *ptr_realloc=NULL;
-       		while ( input[(*here)] != '"') {
-       			test0=test;
-                test=input[(*here)++];
-                if (  (test=='\\') &&  (test0!='#')  ) {
-                	test=input[(*here)++];
-        		}
-        		
-        		ptr_realloc = realloc(lu, (strlen(lu)+1)*sizeof(char));
-        		
-        		if (ptr_realloc != NULL) { 
-        			lu = ptr_realloc;
-        		}
-				lu=strcat(lu,&test);
-				/*mot[cpt++]=test;*/
-       		}
-       		(*here)++;
-        	atom=make_string(lu);
-        	
-    	}
+    }
+
+
+    else if ( car1=='"' )  /* Cas des chaines de caractères */
+    {
+        car1=car2;
+        car2=input[(*here)++];
+        /*char *ptr_realloc=NULL;*/
+
+        char* LU=malloc(strlen(input+(*here))*sizeof(char));     /* Une réallocation permetrait ensuite de limiter la taille allouée à la chaine lu à sa taille réel */
+        int cpt=0;
+
+        while ( input[(*here)] != '"')
+        {
+            car1=car2;
+            car2=input[(*here)++];
+
+            if (  (car2=='\\') &&  (car1!='#')  )
+            {
+                car2=input[(*here)++];
+            }
+
+            LU[cpt++]=car2;
+
+/*
+            if (ptr_realloc = realloc(LU, (strlen(LU)+1)*sizeof(char)))
+            {
+                LU = ptr_realloc;
+            }
+            else
+            {
+                printf("Erreur d'affectation");
+                free(ptr_realloc);
+                break;
+            }
+*/
+
+        }
+        (*here)++;
+        atom=make_string(LU);
+
+    }
 
 
 
-    	else if ( car1=='#' )
-   	{
-        	if (  (car2=='t') && (car3=='\0' || car3==' ' || car3==')')  ) 
-        	{
-            		atom=true;
-            		(*here)+=2;
-        	}
-        
-        	else if (  (car2=='f') && (car3=='\0' || car3==' ' || car3==')')  )
-        	{
-            		atom=false;
-            		(*here)+=2;
-		
-        	}
-	
-		else if (car2=='\\') 
-		{  
-	    		/*on suppose le mot lu de taille < 50  et on stocke newline et space ss forme de symbole 		 				#backslashnewline*/  
-	  		 char lu[50];
-	   		sscanf(input+(*here),"%s",lu);
-	   
-	  		 if (strcmp(lu,"#\\newline")==0)
-				atom=make_symbol(lu); /*il manque increment */
-	   
-	   		if (strcmp(lu,"#\\space")==0)
-	   			atom=make_symbol(lu);  /*il manque increment */
-	   	
-	   		if (strlen(lu)==3)
-	   			{atom=make_character(input[(*here)+2]); 
-	   			(*here)+=3;}
-	 	}
-  	 }
+    else if ( car1=='#' )      /* Cas des symboles */
+    {
+        if (  (car2=='t') && (car3=='\0' || car3==' ' || car3==')')  )
+        {
+            atom=true;
+            (*here)+=2;
+        }
+
+        else if (  (car2=='f') && (car3=='\0' || car3==' ' || car3==')')  )
+        {
+            atom=false;
+            (*here)+=2;
+
+        }
+
+        else if (car2=='\\')
+        {
+            /*on suppose le mot lu de taille < 50  et on stocke newline et space ss forme de symbole 		 				#backslashnewline*/
+            char lu[50];
+            sscanf(input+(*here),"%s",lu);
+
+            if (strcmp(lu,"#\\newline")==0)
+                atom=make_symbol(lu);
+
+            if (strcmp(lu,"#\\space")==0)
+                atom=make_symbol(lu);
+
+            if (strlen(lu)==3)
+            {
+                atom=make_character(input[(*here)+2]);
+                (*here)+=3;
+            }
+        }
+    }
 
 
-    else 
-    {	/*cas des chaines de caracteres : allocation dynamique + copie de la chaine
-	strtok afin de couper le mot dans le cas ou il y a une ")" */
-        
-	char *lu=malloc(strlen(input)+1);
-	strcpy(lu, (input+(*here)) );
-	
-	sscanf(input+(*here),"%s",lu);
-	lu=strtok(lu,")");
-	*(here)=*(here)+strlen(lu);
-	atom=make_symbol(lu);
-    } 
+    else
+    {
 
-	return atom;
+        /*cas des chaines de caracteres : allocation dynamique + copie de la chaine
+        strtok afin de couper le mot dans le cas ou il y a une ")" */
+
+        char *lu=malloc((strlen(input)+1)*sizeof(char));
+        strcpy(lu, (input+(*here)) );
+
+        sscanf(input+(*here),"%s",lu);
+        lu=strtok(lu,")");
+
+        *(here)=*(here)+strlen(lu);
+        atom=make_symbol(lu);
+    }
+
+    return atom;
 }
 
 
 
-object sfs_read_pair( char *stream, uint *i ) {
-	
-	
-	char car1 = stream[(*i)];
-		
+object sfs_read_pair( char *stream, uint *i )
+{
+
+
+    char car1 = stream[(*i)];
+
     while ((car1==' ')|| (car1=='\t')||(car1=='\n') )
-	{
-		(*i)++;
-		car1 = stream[(*i)];
-	}
+    {
+        (*i)++;
+        car1 = stream[(*i)];
+    } /*Permet d'éliminer les espaces et tabulations qui generaient la lecture du code*/
 
-	if( stream[(*i)]==')'){
-		(*i)+=1;
-		return nil;} 
-	
-		
-	object pair= make_pair();
-	
-	(pair->this.pair.car)= sfs_read(stream,i);
-	
-	(pair->this.pair.cdr)= sfs_read_pair(stream,i);
-	
-	return pair;
+
+    if( stream[(*i)]==')')
+    {
+        (*i)+=1;
+        return nil;
+    }
+
+
+    object pair= make_pair();
+
+    (pair->this.pair.car)= sfs_read(stream,i);
+
+    (pair->this.pair.cdr)= sfs_read_pair(stream,i);
+
+    return pair;
 }
 
 
-	
+
 
