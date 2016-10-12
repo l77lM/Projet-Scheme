@@ -111,8 +111,7 @@ typedef enum
     FINISHED        /* on a trouve une S-Expr bien formee */
 } EXPRESSION_TYPE_T;
 
-uint  sfs_get_sexpr( char *input, FILE *fp )
-{
+uint  sfs_get_sexpr( char *input, FILE *fp ) {
     int       parlevel = 0;
     uint      in_string = FALSE;
     uint      s = 0;
@@ -127,15 +126,12 @@ uint  sfs_get_sexpr( char *input, FILE *fp )
     parlevel = 0;
     memset( input, '\0', BIGSTRING );
 
-    do
-    {
+    do {
         ret = NULL;
-        chunk=k;
-        memset( chunk, '\0', BIGSTRING );
+        chunk = NULL;
 
         /* si en mode interactif*/
-        if ( stdin == fp )
-        {
+        if ( stdin == fp ) {
             uint nspaces = 2*parlevel;
 
             init_string( sfs_prompt );
@@ -145,34 +141,28 @@ uint  sfs_get_sexpr( char *input, FILE *fp )
                de ce niveau (un peu à la python)*/
             sprintf( sfs_prompt, "SFS:%u > ", parlevel );
 
-            for ( i= 0; i< nspaces; i++ )
-            {
+            for ( i= 0; i< nspaces; i++ ) {
                 sfs_prompt[strlen(sfs_prompt)] = ' ';
             }
 
             /* si sur plusieurs lignes, le \n équivaut à un espace*/
-            if (nspaces>0)
-            {
+            if (nspaces>0) {
                 input[strlen(input)+1] = '\0';
                 input[strlen(input)] = ' ';
             }
 
             /*saisie de la prochaine ligne à ajouter dans l'input*/
-            printf("%s",sfs_prompt);
-            ret = fgets( chunk, BIGSTRING, fp );
-            if (ret && chunk[strlen(chunk)-1] == '\n') chunk[strlen(chunk)-1] = '\0';
-
+            chunk = readline( sfs_prompt );
         }
         /*si en mode fichier*/
-        else
-        {
+        else {
+            chunk=k;
+            memset( chunk, '\0', BIGSTRING );
             ret = fgets( chunk, BIGSTRING, fp );
 
-            if ( NULL == ret )
-            {
+            if ( NULL == ret ) {
                 /* fin de fichier...*/
-                if ( parlevel != 0 )
-                {
+                if ( parlevel != 0 ) {
                     WARNING_MSG( "Parse error: missing ')'" );
                     return S_KO;
                 }
@@ -181,107 +171,85 @@ uint  sfs_get_sexpr( char *input, FILE *fp )
 
             if (strlen(chunk) == BIGSTRING-1
                     && chunk[BIGSTRING-1] != '\n'
-                    && !feof(fp))
-            {
+                    && !feof(fp)) {
                 WARNING_MSG( "Too long line for this interpreter!" );
                 return S_KO;
             }
         }
 
-        /* si la ligne est inutile
+        /* si la ligne est inutile 
         	=> on va directement à la prochaine iteration */
-        if (first_usefull_char(chunk) == NULL)
-        {
+        if (first_usefull_char(chunk) == NULL) {
             continue;
         }
 
 
         s = strlen( chunk );
 
-        if ( s > 0 )
-        {
-            if (strlen(input) + s > BIGSTRING-1 )
-            {
+        if ( s > 0 ) {
+            if (strlen(input) + s > BIGSTRING-1 ) {
                 WARNING_MSG( "Too long a S-expression for this interpreter!" );
                 return S_KO;
             }
 
-            for ( i = 0; i< strlen(chunk); i++ )
-            {
+            for ( i = 0; i< strlen(chunk); i++ ) {
                 /* si la fin de la ligne chunk est inutile,
                    on ajoute un espace dans input et on sort de la boucle*/
-                if ( in_string == FALSE && first_usefull_char(chunk + i) == NULL )
-                {
+                if ( in_string == FALSE && first_usefull_char(chunk + i) == NULL ) {
                     chunk[i]='\0';
                     input[strlen(input)] = ' ';
                     break;
                 }
 
 
-                switch(chunk[i])
-                {
+                switch(chunk[i]) {
                 case '(':
                     if (in_string == FALSE
-                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) )
-                    {
+                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) ) {
                         parlevel++;
                         typeOfExpressionFound = S_EXPR_PARENTHESIS;
                     }
                     break;
                 case ')':
                     if ( in_string == FALSE
-                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) )
-                    {
+                            && ! ( i>1 && chunk[i-1] == '\\' && chunk[i-2] == '#' ) ) {
                         parlevel--;
-                        if (parlevel == 0 )
-                        {
+                        if (parlevel == 0 ) {
                             typeOfExpressionFound = FINISHED;
                         }
-                        if ( parlevel < 0 )
-                        {
+                        if ( parlevel < 0 ) {
                             WARNING_MSG( "Parse error : cannot start with ')'" );
                             return S_KO;
                         }
                     }
                     break;
                 case '"':
-                    if ( i<2 || chunk[i-1] != '\\' )
-                    {
-                        if ( in_string == FALSE )
-                        {
-                            if(typeOfExpressionFound == BASIC_ATOME)
-                            {
+                    if ( i<2 || chunk[i-1] != '\\' ) {
+                        if ( in_string == FALSE ) {
+                            if(typeOfExpressionFound == BASIC_ATOME) {
                                 WARNING_MSG("Parse error: invalid string after atom : '%s'", chunk+i);
                                 return S_KO;
                             }
                             in_string = TRUE;
-                            if(typeOfExpressionFound != S_EXPR_PARENTHESIS)
-                            {
+                            if(typeOfExpressionFound != S_EXPR_PARENTHESIS) {
                                 typeOfExpressionFound = STRING_ATOME;
                             }
                         }
-                        else
-                        {
+                        else {
                             in_string = FALSE;
-                            if(typeOfExpressionFound == STRING_ATOME)
-                            {
+                            if(typeOfExpressionFound == STRING_ATOME) {
                                 typeOfExpressionFound = FINISHED;
                             }
                         }
                     }
                     break;
                 default:
-                    if(in_string == FALSE)
-                    {
-                        if(isspace(chunk[i]))
-                        {
-                            if(typeOfExpressionFound == BASIC_ATOME)
-                            {
+                    if(in_string == FALSE) {
+                        if(isspace(chunk[i])) {
+                            if(typeOfExpressionFound == BASIC_ATOME) {
                                 typeOfExpressionFound = FINISHED;
                             }
-                        }
-                        else if(typeOfExpressionFound != S_EXPR_PARENTHESIS)
-                        {
+                        } else if(typeOfExpressionFound != S_EXPR_PARENTHESIS) {
                             typeOfExpressionFound = BASIC_ATOME;
                         }
                     }
@@ -289,17 +257,13 @@ uint  sfs_get_sexpr( char *input, FILE *fp )
                 }
 
 
-                if(typeOfExpressionFound == FINISHED)
-                {
+                if(typeOfExpressionFound == FINISHED) {
                     char *first_useful = first_usefull_char(chunk + i + 1);
-                    if( first_useful != NULL)
-                    {
-                        if(*first_useful == ')' )
-                        {
+                    if( first_useful != NULL) {
+                        if(*first_useful == ')' ) {
                             WARNING_MSG( "Parse error: too many closing parenthesis')'" );
                         }
-                        else
-                        {
+                        else {
                             WARNING_MSG("Parse error: invalid trailing chars after S-Expr : '%s'", chunk+i);
                         }
                         return S_KO;
@@ -309,33 +273,31 @@ uint  sfs_get_sexpr( char *input, FILE *fp )
                 /* recopie char par char*/
                 input[strlen(input)] = chunk[i];
             }
-            if(in_string == TRUE)
-            {
+            if(in_string == TRUE) {
                 WARNING_MSG( "Parse error: non terminated string on line %s", chunk );
                 return S_KO;
             }
         }
 
 
-        if ( parlevel > 0 && fp != stdin )
-        {
-            if ( feof( fp ) )
-            {
+        if ( parlevel > 0 && fp != stdin ) {
+            if ( feof( fp ) ) {
                 WARNING_MSG( "Parse error: missing ')'" );
                 return S_KO;
             }
 
             if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = ' ';
         }
-    }
-    while ( parlevel > 0 );
+    } while ( parlevel > 0 );
 
     /* Suppression des espaces restant a la fin de l'expression, notamment le dernier '\n' */
     while (isspace(input[strlen(input)-1])) input[strlen(input)-1] = '\0';
 
+    if(stdin == fp) {
+        add_history( input );
+    }
     return S_OK;
 }
-
 
 object sfs_read( char *input, uint *here )
 {
