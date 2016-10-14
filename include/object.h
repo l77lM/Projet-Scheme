@@ -66,6 +66,12 @@ int est_ident(char* c1,char* c2);
 object car(object paire);
 object cdr(object paire);
 
+object add_num(object A,object B);
+object sous_num(object A,object B);
+object mult_num(object A,object B);
+object sous_num(object A,object B);
+
+
 #define SFS_NUMBER       0x00
 #define SFS_CHARACTER    0x01
 #define SFS_STRING       0x02

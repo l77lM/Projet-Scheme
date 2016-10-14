@@ -172,7 +172,7 @@ object add_symb(object env,object var,object val)
     (VAR->this).pair.cdr = val ;
 
     (env->this).pair.cdr = newnoeud ;
-
+    sfs_print(env);
     return VAR;
 
 }
@@ -206,14 +206,16 @@ object cherche_symbol(object env,object symb)
         /* printf("Symbol not found"); */
     }
 
-    object test=is_symb(env,symb)
+    object test=is_symb(env,symb);
 
-    else if (test!=nil)
+    if (test!=nil)
     {
         return test;
     }
+
     else
     {
+        printf("toto\n");
         return cherche_symbol(car(env),symb);
     }
 
@@ -264,4 +266,73 @@ object cdr(object paire)
         printf("Pas pair");
         return nil;
     }
+}
+
+object add_num(object A,object B)
+{
+    object res=nil;
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        res=make_integer( (A->this.number.this.integer) + (B->this.number.this.integer) );
+        return res;
+    }
+
+    else
+    {
+        ERROR_MSG("Addition impossible");
+        return nil;
+    }
+
+}
+
+
+object sous_num(object A,object B)
+{
+    object res=nil;
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        res=make_integer( (A->this.number.this.integer) - (B->this.number.this.integer) );
+        return res;
+    }
+
+    else
+    {
+        ERROR_MSG("Soustraction impossible");
+        return nil;
+    }
+
+}
+
+object mult_num(object A,object B)
+{
+    object res=nil;
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        res=make_integer( (A->this.number.this.integer) * (B->this.number.this.integer) );
+        return res;
+    }
+
+    else
+    {
+        ERROR_MSG("Multiplication impossible");
+        return nil;
+    }
+
+}
+
+object div_num(object A,object B)
+{
+    object res=nil;
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        res=make_integer( (A->this.number.this.integer) / (B->this.number.this.integer) );
+        return res;
+    }
+
+    else
+    {
+        ERROR_MSG("Division impossible");
+        return nil;
+    }
+
 }

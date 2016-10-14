@@ -43,6 +43,7 @@ void init_interpreter ( void ) {
     true     = init_boolean();
     false    = init_boolean();
 
+    meta_env = make_pair();
 
 
 
@@ -149,7 +150,8 @@ int main ( int argc, char *argv[] ) {
             continue ;
         }
 
-        output = sfs_eval( sexpr );
+        output = sfs_eval( sexpr , meta_env );
+
         if( NULL == output) {
             /* si fichier alors on sort*/
             if (mode == SCRIPT) {

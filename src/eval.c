@@ -14,12 +14,12 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
 
     object output;
 
-    int test=(input->type);
+    int TEST=(input->type);
 
 
-    switch (test)
+    switch (TEST)
     {
-        case SFS_NUMBER:
+    case SFS_NUMBER:
         return input;
         break;
 
@@ -27,11 +27,9 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
         return input;
         break;
 
-
     case SFS_STRING:
         return input;
         break;
-
 
     case SFS_NIL:
         return input;
@@ -41,8 +39,9 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
         return input;
         break;
 
-    case SFS_SYMBOL:
-        return input;
+    case SFS_SYMBOL:;
+        object VAL=cherche_symbol(env,input);
+        return (cdr(VAL));
         break;
 
     case SFS_PAIR:
@@ -57,22 +56,116 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
             if (  0 == est_ident( symb, "define" )  )    /*  Procédure de la fonction DEFINE  */
             {
                 object var=(car(cdr(input)));
-                object val= sfs_eval(car(cdr(cdr(input))));  /* Evalue la valeur implémentée */
-                add_symb(env,symb,val);
 
+                object val= sfs_eval(car(cdr(cdr(input))),env);  /* Evalue la valeur implémentée */
+
+                add_symb(env,var,val);
+                printf("\n");
+                sfs_print(env);
                 if(cdr(cdr(cdr(input)))!=nil)
                 {
-                    WARNING_MSG("Trop de parametres pour la fonction define")
+                    WARNING_MSG("Trop de parametres pour la fonction define");
                 }
                 output=var;
                 /*return output;*/
             }
+
+            else if  (  0 == est_ident( symb, "set!" )  )
+            {
+
+                object test=cherche_symbol(env,car(cdr(input)));
+                if (test!=nil)
+                {
+                    test->this.pair.cdr=sfs_eval(car(cdr(cdr(input))),env);
+                    output=cdr(test);
+                }
+                else
+                {
+                    WARNING_MSG("La variable n'est pas definie");
+                    output=nil;
+                }
+            }
+
+
 
             else if  (  0 == est_ident( symb, "quote" )  )
             {
                 output=cdr(input);
             }
 
+            else if  ( 0 == est_ident( symb, "cons" ) )    /* A prendre comme une primitive plus tard */
+            {
+                output->this.pair.car=sfs_eval(car(cdr(input)),env);
+                object P=make_pair();
+                P->this.pair.car=sfs_eval(car(cdr(cdr(input))),env);
+                output->this.pair.cdr=P;
+            }
+
+            else if ( 0 == est_ident( symb, "+" ) )
+            {
+                object res=make_integer(0);
+                object test=cdr(input);
+                while (test!=nil)
+                {
+                    res=add_num(res,car(test));
+                    test=cdr(test);
+                }
+                output=res;
+            }
+
+            else if ( 0 == est_ident( symb, "-" ) )
+            {
+                object res=make_integer(0);
+                object test=cdr(input);
+                res=add_num(res,car(test));
+                test=cdr(test);
+                while (test!=nil)
+                {
+                    res=sous_num(res,car(test));
+                    test=cdr(test);
+                }
+                output=res;
+            }
+
+            else if ( 0 == est_ident( symb, "*" ) )
+            {
+                object res=make_integer(0);
+                object test=cdr(input);
+                res=add_num(res,car(test));
+                test=cdr(test);
+                while (test!=nil)
+                {
+                    res=mult_num(res,car(test));
+                    test=cdr(test);
+                }
+                output=res;
+            }
+
+            else if ( 0 == est_ident( symb, "/" ) )
+            {
+                object res=make_integer(0);
+                object test=cdr(input);
+                res=add_num(res,car(test));
+                test=cdr(test);
+                while (test!=nil)
+                {
+                    res=div_num(res,car(test));
+                    test=cdr(test);
+                }
+                output=res;
+            }
+
+            else
+            {
+                WARNING_MSG("Symbole inconu");
+            }
+
+
+        }
+        else
+        {
+            output->this.pair.car=sfs_eval(car(input),env);
+            output->this.pair.cdr=sfs_eval(cdr(input),env);
         }
         return output;
         break;
