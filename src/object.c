@@ -8,6 +8,9 @@
  * Object definitions for SFS.
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "object.h"
 #include "mem.h"
 
@@ -141,4 +144,124 @@ object make_pair() {
 	(t->this).pair.cdr = nil ;
 
 	return t;
+}
+
+
+
+
+object make_newENV(object env)
+{
+    /* Crée et renvoie l'adresse d'un nouvel environnement superieur à l'environnement courant */
+    object New= make_pair();
+    New->this.pair.car=env;
+    return New;
+}
+
+
+
+object add_symb(object env,object var,object val)
+{
+    /* Cette fonction ajoute un symbole en début d'environement (masquage) et retourne l'adresse de la paire contenant la variable et sa valeur */
+
+    object VAR= make_pair();
+    object newnoeud= make_pair();
+
+    newnoeud->this.pair.cdr=cdr(env);
+
+    (VAR->this).pair.car = var ;
+    (VAR->this).pair.cdr = val ;
+
+    (env->this).pair.cdr = newnoeud ;
+
+    return VAR;
+
+}
+
+object is_symb(object env,object symb)
+{
+    /* Chercher un symbole dans UN environnement. Cette fonction retourne l'adresse de la paire contenant le symbol et sa valeur ou nil si le symbol est absent de l'environnement */
+
+    object test=nil;
+    object ptr=cdr(env);
+
+    while (ptr!=nil)
+    {
+        test=car(ptr);
+
+        if (0== strcmp( (test->this.pair.car)->this.symbol , symb->this.symbol ))
+        {
+            return test;
+        }
+        ptr=cdr(ptr);
+    }
+    return nil;
+}
+
+object cherche_symbol(object env,object symb)
+{
+    /* Cherche un symbole dans l'environnement et les environnements inferieurs  */
+    if (env==nil)
+    {
+        return nil;
+        /* printf("Symbol not found"); */
+    }
+
+    object test=is_symb(env,symb)
+
+    else if (test!=nil)
+    {
+        return test;
+    }
+    else
+    {
+        return cherche_symbol(car(env),symb);
+    }
+
+
+}
+
+object modif_symbole_env(object env,object symb,object val)
+{
+    /* Cette fonction retourne l'adresse de la paire contenant le symbole et sa valeur modifiée. Renvoie nil si le symbole n'existe pas */
+
+    object test=cherche_symbol(env,symb);
+
+    if (test!=nil)
+    {
+        test->this.pair.cdr=val;
+    }
+    return test;
+}
+
+
+int est_ident(char* c1,char* c2)  /* Si renvoie 0 alors les chaines sont identiques */
+{
+    return strcmp( c1 , c2);
+}
+
+
+object car(object paire)
+{
+    if (paire->type==SFS_PAIR)
+    {
+        return paire->this.pair.car;
+    }
+    else
+    {
+        printf("Pas pair");
+        return nil;
+    }
+}
+
+object cdr(object paire)
+{
+    if (paire->type==SFS_PAIR)
+    {
+        return paire->this.pair.cdr;
+    }
+    else
+    {
+        printf("Pas pair");
+        return nil;
+    }
 }

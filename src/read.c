@@ -495,6 +495,19 @@ object sfs_read_atom( char *input, uint *here )
         }
     }
 
+    else if (car1=='\'')
+    {
+        (*here)=(*here)+1;
+
+        atom=make_pair();
+        (atom->this).pair.car=make_symbol("quote");
+
+        object paire=make_pair();
+        (paire->this.pair.car)= sfs_read(input,here);
+
+
+        (atom->this.pair.cdr)=paire;
+    }
 
     else
     {

@@ -43,6 +43,8 @@ typedef struct object_t
 } *object;
 
 
+
+
 object make_object( uint type );
 object make_nil( void );
 object make_boolean( uint test );
@@ -54,6 +56,16 @@ object make_string(char* str);
 object make_pair();
 object make_infty(int i);
 
+object make_newENV(object env);
+object add_symb(object base,object var,object val);
+object is_symb(object base,object symb);
+object cherche_symbol(object env,object symb);
+object modif_symbole_env(object base,object symb,object val);
+
+int est_ident(char* c1,char* c2);
+object car(object paire);
+object cdr(object paire);
+
 #define SFS_NUMBER       0x00
 #define SFS_CHARACTER    0x01
 #define SFS_STRING       0x02
@@ -61,6 +73,7 @@ object make_infty(int i);
 #define SFS_NIL          0x04
 #define SFS_BOOLEAN      0x05
 #define SFS_SYMBOL       0x06
+
 
 
 extern object nil;
@@ -71,6 +84,7 @@ extern object false;
 
 extern object empty_list;
 
+extern object meta_env;
 
 #ifdef __cplusplus
 }

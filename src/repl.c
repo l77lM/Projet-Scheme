@@ -34,6 +34,7 @@ object nil;
 object true;
 object false;
 object empty_list;
+object meta_env;
 
 
 void init_interpreter ( void ) {
@@ -41,6 +42,7 @@ void init_interpreter ( void ) {
     nil      = make_nil();
     true     = init_boolean();
     false    = init_boolean();
+
 
 
 
