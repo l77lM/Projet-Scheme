@@ -145,3 +145,36 @@ void sfs_print( object o )
     }
 
 }
+
+
+void sfs_print_env(object ENV)
+{
+    object env=ENV;
+    object noeud=ENV;
+    if (cdr(env)==nil)
+    {
+        printf("Environnement vide\n");
+    }
+
+    int cpt=1;
+
+    while (env != nil)
+    {
+        noeud=cdr(env);
+        printf("Env %d:\n",cpt);
+        while (noeud != nil)
+        {
+
+            /*if ( (car(noeud))->type == SFS_PAIR )*/
+
+                sfs_print_atom(car(car(noeud)));
+                printf(" -> ");
+                if (  cdr(car(noeud))->type == SFS_PAIR ) {printf("(");}
+                sfs_print(cdr(car(noeud)));
+                printf("\n");
+
+            noeud=cdr(noeud);
+        }
+        env=car(env);
+    }
+}

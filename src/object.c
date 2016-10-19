@@ -166,13 +166,17 @@ object add_symb(object env,object var,object val)
     object VAR= make_pair();
     object newnoeud= make_pair();
 
-    newnoeud->this.pair.cdr=cdr(env);
+    (newnoeud->this).pair.cdr=cdr(env);
 
     (VAR->this).pair.car = var ;
     (VAR->this).pair.cdr = val ;
 
+    (newnoeud->this).pair.car = VAR;
+
     (env->this).pair.cdr = newnoeud ;
-    sfs_print(env);
+
+    /*printf("Ajout symbole\n");*/
+
     return VAR;
 
 }
@@ -183,6 +187,8 @@ object is_symb(object env,object symb)
 
     object test=nil;
     object ptr=cdr(env);
+
+    /*printf("Is symbol\n");*/
 
     while (ptr!=nil)
     {
@@ -200,6 +206,9 @@ object is_symb(object env,object symb)
 object cherche_symbol(object env,object symb)
 {
     /* Cherche un symbole dans l'environnement et les environnements inferieurs  */
+
+    /*printf("Cherche symbol\n");*/
+
     if (env==nil)
     {
         return nil;
@@ -215,7 +224,6 @@ object cherche_symbol(object env,object symb)
 
     else
     {
-        printf("toto\n");
         return cherche_symbol(car(env),symb);
     }
 
@@ -225,6 +233,8 @@ object cherche_symbol(object env,object symb)
 object modif_symbole_env(object env,object symb,object val)
 {
     /* Cette fonction retourne l'adresse de la paire contenant le symbole et sa valeur modifiée. Renvoie nil si le symbole n'existe pas */
+
+    /*printf("Modif symbol\n");*/
 
     object test=cherche_symbol(env,symb);
 
@@ -250,7 +260,7 @@ object car(object paire)
     }
     else
     {
-        printf("Pas pair");
+        printf("Pas pair car");
         return nil;
     }
 }
@@ -263,7 +273,7 @@ object cdr(object paire)
     }
     else
     {
-        printf("Pas pair");
+        printf("Pas pair cdr");
         return nil;
     }
 }
@@ -279,7 +289,7 @@ object add_num(object A,object B)
 
     else
     {
-        ERROR_MSG("Addition impossible");
+        WARNING_MSG("Addition impossible");
         return nil;
     }
 
@@ -297,7 +307,7 @@ object sous_num(object A,object B)
 
     else
     {
-        ERROR_MSG("Soustraction impossible");
+        WARNING_MSG("Soustraction impossible");
         return nil;
     }
 
@@ -314,7 +324,7 @@ object mult_num(object A,object B)
 
     else
     {
-        ERROR_MSG("Multiplication impossible");
+        WARNING_MSG("Multiplication impossible");
         return nil;
     }
 
@@ -331,7 +341,7 @@ object div_num(object A,object B)
 
     else
     {
-        ERROR_MSG("Division impossible");
+        WARNING_MSG("Division impossible");
         return nil;
     }
 

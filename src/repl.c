@@ -165,7 +165,8 @@ int main ( int argc, char *argv[] ) {
 
         printf( "==> " );
 	if( output-> type == SFS_PAIR) {printf("(");}
-        sfs_print( output );
+
+    sfs_print( output );
 	/*if( output-> type == SFS_PAIR) {printf(")");}*/
 	printf( "\n" );
     }

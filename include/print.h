@@ -24,6 +24,8 @@ void sfs_print_atom( object );
 
 void sfs_print_pair( object );
 
+void sfs_print_env(object ENV);
+
 #ifdef __cplusplus
 }
 #endif

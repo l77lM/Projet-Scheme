@@ -41,7 +41,14 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
 
     case SFS_SYMBOL:;
         object VAL=cherche_symbol(env,input);
-        return (cdr(VAL));
+        if (VAL != nil)
+        {
+            return (cdr(VAL));
+        }
+        else
+        {
+            return nil;
+        }
         break;
 
     case SFS_PAIR:
@@ -55,18 +62,44 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
 
             if (  0 == est_ident( symb, "define" )  )    /*  Procédure de la fonction DEFINE  */
             {
+                object test=is_symb(env,car(cdr(input)));
+
+                if (test == nil)
+                {
+                    object var=(car(cdr(input)));
+
+                    object val= sfs_eval(car(cdr(cdr(input))),env);  /* Evalue la valeur implémentée */
+
+                    add_symb(env,var,val);
+
+                    sfs_print_env(env);    /* Affiche l'environnement */
+
+                    output=var;
+                }
+                else
+                {
+                    test->this.pair.cdr= sfs_eval(car(cdr(cdr(input))),env);
+                    output=cdr(test);
+
+                    sfs_print_env(env);    /* Affiche l'environnement */
+                }
+   /*
                 object var=(car(cdr(input)));
 
                 object val= sfs_eval(car(cdr(cdr(input))),env);  /* Evalue la valeur implémentée */
 
-                add_symb(env,var,val);
-                printf("\n");
-                sfs_print(env);
+   /*             add_symb(env,var,val);
+
+                output=var;
+
+                sfs_print_env(env);    /* Affiche l'environnement */
+
+
                 if(cdr(cdr(cdr(input)))!=nil)
                 {
                     WARNING_MSG("Trop de parametres pour la fonction define");
                 }
-                output=var;
+
                 /*return output;*/
             }
 
@@ -107,7 +140,7 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
                 object test=cdr(input);
                 while (test!=nil)
                 {
-                    res=add_num(res,car(test));
+                    res=add_num(sfs_eval(res,env),sfs_eval(car(test),env));
                     test=cdr(test);
                 }
                 output=res;
@@ -117,11 +150,11 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
             {
                 object res=make_integer(0);
                 object test=cdr(input);
-                res=add_num(res,car(test));
+                res=add_num(sfs_eval(res,env),sfs_eval(car(test),env));
                 test=cdr(test);
                 while (test!=nil)
                 {
-                    res=sous_num(res,car(test));
+                    res=sous_num(sfs_eval(res,env),sfs_eval(car(test),env));
                     test=cdr(test);
                 }
                 output=res;
@@ -131,11 +164,11 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
             {
                 object res=make_integer(0);
                 object test=cdr(input);
-                res=add_num(res,car(test));
+                res=add_num(sfs_eval(res,env),sfs_eval(car(test),env));
                 test=cdr(test);
                 while (test!=nil)
                 {
-                    res=mult_num(res,car(test));
+                    res=mult_num(sfs_eval(res,env),sfs_eval(car(test),env));
                     test=cdr(test);
                 }
                 output=res;
@@ -145,19 +178,40 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
             {
                 object res=make_integer(0);
                 object test=cdr(input);
-                res=add_num(res,car(test));
+                res=add_num(sfs_eval(res,env),sfs_eval(car(test),env));
                 test=cdr(test);
                 while (test!=nil)
                 {
-                    res=div_num(res,car(test));
+                    res=div_num(sfs_eval(res,env),sfs_eval(car(test),env));
                     test=cdr(test);
                 }
                 output=res;
             }
 
+            else if  (  0 == est_ident( symb, "car" )  )
+            {
+                output=sfs_eval(car(car(cdr(input))),env);
+            }
+
+            else if  (  0 == est_ident( symb, "cdr" )  )
+            {
+                output=sfs_eval(cdr(car(cdr(input))),env);
+            }
+
             else
             {
-                WARNING_MSG("Symbole inconu");
+                object test=cherche_symbol(env,gauche);
+                if (test != nil)
+                {
+                    /*=cdr(test); */
+                    output->this.pair.car=sfs_eval(car(input),env);
+                    output->this.pair.cdr=sfs_eval(cdr(input),env);
+                }
+                else
+                {
+                    /*WARNING_MSG("Symbole inconu");*/
+                }
+
             }
 
 
