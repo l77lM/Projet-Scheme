@@ -63,13 +63,28 @@ object cherche_symbol(object env,object symb);
 object modif_symbole_env(object base,object symb,object val);
 
 int est_ident(char* c1,char* c2);
+
 object car(object paire);
 object cdr(object paire);
 
-object add_num(object A,object B);
+object add_num(object A,object B);      /* Fonctions liées aux opérations de nombres  */
 object sous_num(object A,object B);
 object mult_num(object A,object B);
 object sous_num(object A,object B);
+object compare_num(object A,object B);
+
+object predicat(object A);              /* Fonctions liées à if   */
+object consequence(object A);
+object alternative(object A);
+
+object eval_bool(object A);
+
+object exist_symb(char* nomsymb);       /* Fonctions liées à la table de symbole */
+object add_table(char* nomsymb);
+void init_table();
+void affiche_table();
+
+
 
 
 #define SFS_NUMBER       0x00
@@ -91,6 +106,8 @@ extern object false;
 extern object empty_list;
 
 extern object meta_env;
+
+extern object table_symbol;
 
 #ifdef __cplusplus
 }

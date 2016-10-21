@@ -67,11 +67,26 @@ object init_boolean( void ) {
 
 object make_symbol(char* symb) {
 
+	object test=exist_symb(symb);
+
+	if (test!=nil)
+    {
+        return test;
+    }
+
+	else
+    {
+        return(add_table(symb));
+    }
+
+
+	/*
 	object t = make_object( SFS_SYMBOL );
 
 	strcpy( t->this.symbol , symb);
 
 	return t;
+	*/
 }
 
 
@@ -212,6 +227,7 @@ object cherche_symbol(object env,object symb)
     if (env==nil)
     {
         return nil;
+
         /* printf("Symbol not found"); */
     }
 
@@ -345,4 +361,175 @@ object div_num(object A,object B)
         return nil;
     }
 
+}
+
+object compare_num(object A,object B)
+{
+    /* Renvoie true si A > B  false sinon */
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        if ( (A->this.number.this.integer) > (B->this.number.this.integer) )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    else
+    {
+        WARNING_MSG("comparaison impossible");
+        return nil;
+    }
+}
+
+object egal_num(object A,object B)
+{
+    /* Renvoie true si A = B  false sinon */
+    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
+    {
+        if ( (A->this.number.this.integer) == (B->this.number.this.integer) )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    else
+    {
+        WARNING_MSG("comparaison impossible");
+        return nil;
+    }
+}
+
+
+object predicat(object A)
+{
+    return (car(cdr(A)));
+}
+
+object consequence(object A)
+{
+    return (car(cdr(cdr(A))));
+}
+
+object alternative(object A)
+{
+    object test=cdr(cdr(cdr(A)));
+    object output=nil;
+
+    if (test!=nil)
+    {
+        output=car(test);
+        if (cdr(test)!=nil)
+        {
+            WARNING_MSG("Trop de parametres pour la fonction \"if\"\n");
+        }
+    }
+    return output;
+}
+
+object eval_bool(object A)
+{
+    if (A==true || A==false)
+    {
+        return A;
+    }
+
+    if (A->type==SFS_PAIR)
+    {
+        char*symb=(car(A))->this.symbol;
+        object gauche=car(cdr(A));
+        object droite=car(cdr(cdr(A)));
+        object output=nil;
+
+        if (  0 == est_ident( symb, ">" )  )
+        {
+            output=compare_num(gauche,droite);
+        }
+
+        if (  0 == est_ident( symb, "<" )  )
+        {
+            output=compare_num(droite,gauche);
+        }
+
+        if (  0 == est_ident( symb, "=" )  )
+        {
+            output=egal_num(gauche,droite);
+        }
+
+        return output;
+
+    }
+}
+
+
+object add_table(char* nomsymb)
+{
+    /* Crée un nouvel objet symbole au début de la table et renvoie son adresse */
+    object noeud=make_pair();
+
+    object symb = make_object( SFS_SYMBOL );
+	strcpy( symb->this.symbol , nomsymb);
+
+    noeud->this.pair.cdr=cdr(table_symbol);
+
+    noeud->this.pair.car=symb;
+
+    table_symbol->this.pair.cdr=noeud;
+
+    return symb;
+}
+
+
+
+object exist_symb(char* nomsymb)
+{
+    /* Chercher un symbole dans la table de symbole. Cette fonction retourne l'adresse de l'objet symbol ou nil si le symbol est absent de la table */
+
+    object test=nil;
+    object ptr=cdr(table_symbol);
+
+
+    while (ptr!=nil)
+    {
+
+        if (0== est_ident( (ptr->this.pair.car)->this.symbol , nomsymb ))
+        {
+            return test;
+        }
+        ptr=cdr(ptr);
+    }
+    return nil;
+}
+
+void affiche_table()
+{
+    object test=cdr(table_symbol);
+    while (test != nil)
+    {
+        sfs_print(car(test));
+        printf("\t");
+        test=cdr(test);
+    }
+    printf("\n");
+}
+
+
+void init_table()
+{
+    add_table("define");
+    add_table("set!");
+    add_table("and");
+    add_table("or");
+    add_table("if");
+    add_table("+");
+    add_table("-");
+    add_table("*");
+    add_table("/");
 }

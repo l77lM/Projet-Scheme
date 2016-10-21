@@ -35,6 +35,7 @@ object true;
 object false;
 object empty_list;
 object meta_env;
+object table_symbol;
 
 
 void init_interpreter ( void ) {
@@ -44,8 +45,10 @@ void init_interpreter ( void ) {
     false    = init_boolean();
 
     meta_env = make_pair();
+    table_symbol=make_pair();
 
-
+    init_table();
+    /*affiche_table();*/
 
 }
 
