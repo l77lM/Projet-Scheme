@@ -9,6 +9,7 @@
  */
 
 #include "eval.h"
+#include "object.h"
 
 object sfs_eval( object input,object env ) {      /* Tentative de prise en compte de l'environnement, Attention au main !!! */
 
@@ -76,7 +77,7 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
 
                     add_symb(env,var,val);
 
-                    /*sfs_print_env(env);    /* Affiche l'environnement */
+                    /*sfs_print_env(env);*/    /* Affiche l'environnement */
 
                     output=var;
                 }
@@ -85,18 +86,18 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
                     test->this.pair.cdr= sfs_eval(car(cdr(cdr(input))),env);
                     output=cdr(test);
 
-                    /*sfs_print_env(env);    /* Affiche l'environnement */
+                    /*sfs_print_env(env);*/    /* Affiche l'environnement */
                 }
    /*
-                object var=(car(cdr(input)));
+                object var=(car(cdr(input))); */
 
-                object val= sfs_eval(car(cdr(cdr(input))),env);  /* Evalue la valeur implémentée */
+                /*object val= sfs_eval(car(cdr(cdr(input))),env);*/  /* Evalue la valeur implémentée */
 
    /*             add_symb(env,var,val);
 
                 output=var;
 
-                sfs_print_env(env);    /* Affiche l'environnement */
+                sfs_print_env(env);*/    /* Affiche l'environnement */
 
 
                 if(cdr(cdr(cdr(input)))!=nil)
@@ -314,5 +315,5 @@ object sfs_eval( object input,object env ) {      /* Tentative de prise en compt
         break;
 
     }
-
+return nil ; /*fonciton doit renvoyer dans tous les cas un objet*/
 }

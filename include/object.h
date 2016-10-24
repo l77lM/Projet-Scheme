@@ -72,6 +72,7 @@ object sous_num(object A,object B);
 object mult_num(object A,object B);
 object sous_num(object A,object B);
 object compare_num(object A,object B);
+object div_num(object A,object B);
 
 object predicat(object A);              /* Fonctions liées à if   */
 object consequence(object A);
