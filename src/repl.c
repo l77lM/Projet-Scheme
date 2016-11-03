@@ -48,6 +48,7 @@ void init_interpreter ( void ) {
     table_symbol=make_pair();
 
     init_table();
+    init_primitives();
     /*affiche_table();*/
 
 }
@@ -153,7 +154,7 @@ int main ( int argc, char *argv[] ) {
             continue ;
         }
 
-        output = sfs_eval( sexpr , meta_env );
+        output = sfs_eval( sexpr );
 
         if( NULL == output) {
             /* si fichier alors on sort*/

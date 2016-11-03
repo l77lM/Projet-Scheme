@@ -1,4 +1,3 @@
-
 /**
  * @file object.c
  * @author François Cayre <cayre@yiking.(null)>
@@ -15,7 +14,8 @@
 #include "mem.h"
 
 
-object make_object( uint type ) {
+object make_object( uint type )
+{
 
     object t = sfs_malloc( sizeof( *t ) );
 
@@ -24,10 +24,20 @@ object make_object( uint type ) {
     return t;
 }
 
+object make_primitive(object (*ptrPrim)(object))
+{
+    printf("make_primitive ");  /* Debug */
+
+    object prim=make_object(SFS_PRIMITIVE);
+
+    (prim->this).primitive.function=ptrPrim;
+
+    return prim;
+}
 
 
-
-object make_nil( void ) {
+object make_nil( void )
+{
 
     object t = make_object( SFS_NIL );
 
@@ -37,128 +47,174 @@ object make_nil( void ) {
 }
 
 
-object make_boolean( uint test ) {
+object make_boolean( uint test )
+{
 
-	object t = make_object( SFS_BOOLEAN );
+    object t = make_object( SFS_BOOLEAN );
 
-	if (test==1) { t->this.special = false; }
+    if (test==1)
+    {
+        t->this.special = false;
+    }
 
-	if (test==0) { t->this.special = true; }
+    if (test==0)
+    {
+        t->this.special = true;
+    }
 
-	else {
-		printf("\nBooleen non reconnu\n");
-		return NULL ;
-	}
-	return t;
+    else
+    {
+        printf("\nBooleen non reconnu\n");
+        return NULL ;
+    }
+    return t;
 }
 
 
 
-object init_boolean( void ) {
+object init_boolean( void )
+{
 
-	object t = make_object( SFS_BOOLEAN );
+    object t = make_object( SFS_BOOLEAN );
 
-	t->this.special = NULL;
+    t->this.special = NULL;
 
-	return t;
+    return t;
 }
 
 
 
-object make_symbol(char* symb) {
+object make_symbol(char* symb)
+{
 
-	object test=exist_symb(symb);
+    object test=exist_symb(symb);
 
-	if (test!=nil)
+    if (test!=nil)
     {
         return test;
     }
 
-	else
+    else
     {
         return(add_table(symb));
     }
 
 
-	/*
-	object t = make_object( SFS_SYMBOL );
+    /*
+    object t = make_object( SFS_SYMBOL );
 
-	strcpy( t->this.symbol , symb);
+    strcpy( t->this.symbol , symb);
 
-	return t;
-	*/
+    return t;
+    */
+}
+
+int est_entier(double d)
+{
+    /* Renvoie 0 si c'est un entier, 1 sinon */
+    int i= (int)d;
+    if (i == d)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+
+}
+
+object make_integer(int N)
+{
+
+    object t = make_object( SFS_NUMBER );
+
+    t->type = SFS_NUMBER;
+    (t->this.number).numtype = NUM_INTEGER;
+    (t->this.number).this.integer = N;
+
+
+    return t;
+}
+
+
+object make_infty(int i)
+{
+
+    object t = make_object( SFS_NUMBER );
+
+    t->type = SFS_NUMBER;
+    if (i==0)
+    {
+        (t->this.number).numtype = NUM_MINFTY;
+    }
+    if (i==-1)
+    {
+        (t->this.number).numtype = NUM_PINFTY;
+    }
+
+    return t;
+}
+
+
+object make_real(double X)
+{
+
+    object t = make_object( SFS_NUMBER );
+
+    t->type = SFS_NUMBER;
+    (t->this.number).numtype = NUM_REAL;
+    (t->this.number).this.real = X;
+
+
+    return t;
+}
+
+object make_undef(void)
+{
+
+    object t = make_object( SFS_NUMBER );
+
+    t->type = SFS_NUMBER;
+    (t->this.number).numtype = NUM_UNDEF;
+
+    return t;
+}
+
+
+object make_character(char car)
+{
+
+    object t = make_object( SFS_CHARACTER );
+
+    t->this.character = car;
+
+    return t;
 }
 
 
 
-object make_integer(int N) {
+object make_string(char* str)
+{
 
-	object t = make_object( SFS_NUMBER );
+    object t = make_object( SFS_STRING );
 
-	t->type = SFS_NUMBER;
-	(t->this.number).numtype = NUM_INTEGER;
-	(t->this.number).this.integer = N;
+    strncpy((t->this).string, str, strlen(str));
 
-
-	return t;
-}
-
-object make_infty(int i){
-
-	object t = make_object( SFS_NUMBER );
-
-	t->type = SFS_NUMBER;
-	if (i==0)  { (t->this.number).numtype = NUM_MINFTY; }
-	if (i==-1) { (t->this.number).numtype = NUM_PINFTY; }
-
-	return t;
-}
-
-
-object make_real(double X) {
-
-	object t = make_object( SFS_NUMBER );
-
-	t->type = SFS_NUMBER;
-	(t->this.number).numtype = NUM_REAL;
-	(t->this.number).this.real = X;
-
-
-	return t;
+    return t;
 }
 
 
 
-object make_character(char car) {
+object make_pair()
+{
 
-	object t = make_object( SFS_CHARACTER );
+    object t = make_object( SFS_PAIR );
 
-	t->this.character = car;
+    (t->this).pair.car = nil ;
+    (t->this).pair.cdr = nil ;
 
-	return t;
-}
-
-
-
-object make_string(char* str) {
-
-	object t = make_object( SFS_STRING );
-
-	strncpy((t->this).string , str , strlen(str));
-
-	return t;
-}
-
-
-
-object make_pair() {
-
-	object t = make_object( SFS_PAIR );
-
-	(t->this).pair.car = nil ;
-	(t->this).pair.cdr = nil ;
-
-	return t;
+    return t;
 }
 
 
@@ -209,7 +265,7 @@ object is_symb(object env,object symb)
     {
         test=car(ptr);
 
-        if (0== strcmp( (test->this.pair.car)->this.symbol , symb->this.symbol ))
+        if (0== strcmp( (test->this.pair.car)->this.symbol, symb->this.symbol ))
         {
             return test;
         }
@@ -264,7 +320,7 @@ object modif_symbole_env(object env,object symb,object val)
 
 int est_ident(char* c1,char* c2)  /* Si renvoie 0 alors les chaines sont identiques */
 {
-    return strcmp( c1 , c2);
+    return strcmp( c1, c2);
 }
 
 
@@ -276,7 +332,7 @@ object car(object paire)
     }
     else
     {
-        printf("Pas pair car");
+        printf("Le car n'est pas une paire \n");
         return nil;
     }
 }
@@ -289,79 +345,13 @@ object cdr(object paire)
     }
     else
     {
-        printf("Pas pair cdr");
+        printf("Le cdr n'est pas une paire");
         return nil;
     }
 }
 
-object add_num(object A,object B)
-{
-    object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) + (B->this.number.this.integer) );
-        return res;
-    }
-
-    else
-    {
-        WARNING_MSG("Addition impossible");
-        return nil;
-    }
-
-}
 
 
-object sous_num(object A,object B)
-{
-    object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) - (B->this.number.this.integer) );
-        return res;
-    }
-
-    else
-    {
-        WARNING_MSG("Soustraction impossible");
-        return nil;
-    }
-
-}
-
-object mult_num(object A,object B)
-{
-    object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) * (B->this.number.this.integer) );
-        return res;
-    }
-
-    else
-    {
-        WARNING_MSG("Multiplication impossible");
-        return nil;
-    }
-
-}
-
-object div_num(object A,object B)
-{
-    object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) / (B->this.number.this.integer) );
-        return res;
-    }
-
-    else
-    {
-        WARNING_MSG("Division impossible");
-        return nil;
-    }
-
-}
 
 object compare_num(object A,object B)
 {
@@ -410,12 +400,12 @@ object egal_num(object A,object B)
 
 object predicat(object A)
 {
-    return (car(cdr(A)));
+    return (sfs_eval(car(cdr(A))));
 }
 
 object consequence(object A)
 {
-    return (car(cdr(cdr(A))));
+    return (sfs_eval(car(cdr(cdr(A)))));
 }
 
 object alternative(object A)
@@ -425,7 +415,7 @@ object alternative(object A)
 
     if (test!=nil)
     {
-        output=car(test);
+        output=sfs_eval(car(test));
         if (cdr(test)!=nil)
         {
             WARNING_MSG("Trop de parametres pour la fonction \"if\"\n");
@@ -441,11 +431,11 @@ object eval_bool(object A)
         return A;
     }
 
-    if (A->type==SFS_PAIR)
+    else if (A->type==SFS_PAIR)
     {
         char*symb=(car(A))->this.symbol;
-        object gauche=car(cdr(A));
-        object droite=car(cdr(cdr(A)));
+        object gauche=sfs_eval(car(cdr(A)));
+        object droite=sfs_eval(car(cdr(cdr(A))));
         object output=nil;
 
         if (  0 == est_ident( symb, ">" )  )
@@ -463,8 +453,16 @@ object eval_bool(object A)
             output=egal_num(gauche,droite);
         }
 
+        else
+        {
+            WARNING_MSG("Pas d'évaluation possible pour le booléen");
+        }
         return output;
+    }
 
+    else
+    {
+        WARNING_MSG("Pas d'évaluation possible pour le booléen");
     }
 }
 
@@ -475,7 +473,7 @@ object add_table(char* nomsymb)
     object noeud=make_pair();
 
     object symb = make_object( SFS_SYMBOL );
-	strcpy( symb->this.symbol , nomsymb);
+    strcpy( symb->this.symbol, nomsymb);
 
     noeud->this.pair.cdr=cdr(table_symbol);
 
@@ -499,7 +497,7 @@ object exist_symb(char* nomsymb)
     while (ptr!=nil)
     {
 
-        if (0== est_ident( (ptr->this.pair.car)->this.symbol , nomsymb ))
+        if (0== est_ident( (ptr->this.pair.car)->this.symbol, nomsymb ))
         {
             return test;
         }

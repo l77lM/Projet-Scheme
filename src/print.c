@@ -20,7 +20,7 @@ void sfs_print_atom( object o )
         switch (((o->this).number).numtype)
         {
         case NUM_REAL:
-            printf("%f",((o->this).number).this.real);
+            printf("%g",((o->this).number).this.real);
             break;
 
         case NUM_INTEGER:
@@ -36,7 +36,7 @@ void sfs_print_atom( object o )
             break;
 
         case NUM_UNDEF:
-            printf("UNDEF pas encore defini\n");
+            printf("UNDEF");
             break;
 
         case NUM_PINFTY:
@@ -44,7 +44,7 @@ void sfs_print_atom( object o )
             break;
 
         case NUM_MINFTY:
-            printf("-inf");
+            printf("-inf %c",236);
             break;
         }
 
@@ -86,14 +86,8 @@ void sfs_print_atom( object o )
     return ;
 }
 
-void sfs_print_pair( object o )       /* a verifier !!!!!! */
+void sfs_print_pair( object o )
 {
-
-    /*if (o ->type==SFS_NIL){
-    	printf(")");
-    }
-
-    else { */
 
     if (  o ->this.pair.car -> type == SFS_PAIR)
     {

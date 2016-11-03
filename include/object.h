@@ -38,6 +38,11 @@ typedef struct object_t
 
         struct object_t *special;
 
+        struct
+        {
+            struct object_t* (*function)(struct object_t*);
+        } primitive;
+
     } this;
 
 } *object;
@@ -46,33 +51,36 @@ typedef struct object_t
 
 
 object make_object( uint type );
+object make_primitive(object (*ptrPrim)(object));    /* Primitive */
 object make_nil( void );
-object make_boolean( uint test );
-object init_boolean( void );
 object make_symbol(char* symb);
-object make_integer(int N);
 object make_character(char car);
 object make_string(char* str);
 object make_pair();
-object make_infty(int i);
 
-object make_newENV(object env);
-object add_symb(object base,object var,object val);
-object is_symb(object base,object symb);
+object make_boolean( uint test );
+object init_boolean( void );
+
+int est_entier(double d);
+object make_infty(int i);
+object make_real(double X);
+object make_integer(int N);
+object make_undef(void);
+
+object make_newENV(object env);                         /* Manipulation Environnements */
+object add_symb(object env,object var,object val);
+object is_symb(object env,object symb);
 object cherche_symbol(object env,object symb);
-object modif_symbole_env(object base,object symb,object val);
+object modif_symbole_env(object env,object symb,object val);
 
 int est_ident(char* c1,char* c2);
 
 object car(object paire);
 object cdr(object paire);
 
-object add_num(object A,object B);      /* Fonctions liées aux opérations de nombres  */
-object sous_num(object A,object B);
-object mult_num(object A,object B);
-object sous_num(object A,object B);
+
 object compare_num(object A,object B);
-object div_num(object A,object B);
+
 
 object predicat(object A);              /* Fonctions liées à if   */
 object consequence(object A);
@@ -95,6 +103,7 @@ void affiche_table();
 #define SFS_NIL          0x04
 #define SFS_BOOLEAN      0x05
 #define SFS_SYMBOL       0x06
+#define SFS_PRIMITIVE    0x07
 
 
 

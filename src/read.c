@@ -177,7 +177,7 @@ uint  sfs_get_sexpr( char *input, FILE *fp ) {
             }
         }
 
-        /* si la ligne est inutile 
+        /* si la ligne est inutile
         	=> on va directement à la prochaine iteration */
         if (first_usefull_char(chunk) == NULL) {
             continue;
@@ -340,7 +340,8 @@ object sfs_read_atom( char *input, uint *here )
     char car1 = input[(*here)];
     char car2 = input[(*here)+1];
     char car3 = input[(*here)+2];
-    long int nb;
+    /*long int nb;*/
+    double nb;
 
 
 
@@ -359,7 +360,8 @@ object sfs_read_atom( char *input, uint *here )
     {
         char* ptr;
 
-        nb = strtol( (input+(*here)), &ptr, 10);
+        /*nb = strtol( (input+(*here)), &ptr, 10);*/
+        nb = strtod( (input+(*here)), &ptr);
 
         (*here)=ptr-input;
 
@@ -371,8 +373,16 @@ object sfs_read_atom( char *input, uint *here )
         }
         if (errno != ERANGE)
         {
+            if (est_entier(nb)==0)
+            {
+                atom=make_integer(nb);
+            }
+            else
+            {
+                atom=make_real(nb);
+            }
 
-            atom=make_integer(nb);
+            /*atom=make_integer(nb);*/
         }
         errno=0;
 
