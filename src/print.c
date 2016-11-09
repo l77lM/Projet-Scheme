@@ -17,6 +17,7 @@ void sfs_print_atom( object o )
     switch (o->type)
     {
     case SFS_NUMBER:
+
         switch (((o->this).number).numtype)
         {
         case NUM_REAL:
@@ -44,10 +45,9 @@ void sfs_print_atom( object o )
             break;
 
         case NUM_MINFTY:
-            printf("-inf %c",236);
+            printf("-inf");
             break;
         }
-
         break;
 
     case SFS_CHARACTER:

@@ -2,19 +2,32 @@
 #include <string.h>
 
 #include "primitive.h"
+#include "object.h"
+
+void init_primitives(void)
+{
+    save_primitive("+",prim_plus);
+    save_primitive("-",prim_moins);
+    save_primitive("*",prim_mult);
+    save_primitive("/",prim_div);
+
+    save_primitive("null?",prim_null);
+    save_primitive("boolean?",prim_boolean);
+    save_primitive("symbol?",prim_symbol);
+    save_primitive("char?",prim_char);
+    save_primitive("string?",prim_string);
+    save_primitive("pair?",prim_pair);
+    save_primitive("integer?",prim_integer);
+    save_primitive("real?",prim_real);
+    save_primitive("pinfty?",prim_pinfty);
+    save_primitive("minfty?",prim_minfty);
+}
+
 
 
 object eval_arg(object A)
 {
     /* Evalue la liste des arguments d'une primitive */
-    printf("eval_arg");
-    /*object ptr=A;
-    object val=nil;
-    while (ptr != nil)
-    {
-        val=sfs_eval(car(ptr));
-        ptr->this.pair.car=val;
-    }*/
     return sfs_eval(A);
 }
 
@@ -29,15 +42,11 @@ object save_primitive( char* nom, object (*ptrPrim)(object) )
     return A;
 }
 
-void init_primitives(void)
-{
-    save_primitive("+",prim_plus);
-}
+
 
 
 object prim_plus( object Liste )
 {
-    printf("Plus ");  /* Debugage */
     object res=make_integer(0);
     object test=Liste;
     while (test!=nil)
@@ -49,117 +58,122 @@ object prim_plus( object Liste )
 }
 
 
-object add_num(object A,object B)
+object prim_moins( object Liste)
 {
-    printf("add_num "); /* Debugage */
     object res=nil;
-    uint ta=A->this.number.numtype;
-    uint tb=B->this.number.numtype;
+    object test=cdr(Liste);
 
-    if (   ( ( ta == NUM_INTEGER) || (ta==NUM_UINTEGER)   )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
+    if ( test==nil )
     {
-        /* Si A et B entiers */
-        res=make_integer( (A->this.number.this.integer) + (B->this.number.this.integer) );
+        res=oppose_num(car(Liste));
     }
-
-    else if    ( (ta==NUM_REAL )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (A->this.number.this.real) + (B->this.number.this.integer) );
-    }
-
-    else if    ( (tb==NUM_REAL )  &&   ((ta==NUM_INTEGER) || (ta==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (B->this.number.this.real) + (A->this.number.this.integer) );
-    }
-
-    else if   ( ( ta==NUM_REAL )  &&   (tb==NUM_REAL) )
-    {
-        /* Si les deux sont reels */
-        res=make_real( (A->this.number.this.real) + (B->this.number.this.real) );
-    }
-
-    else if (  (ta==NUM_UNDEF )  ||  (tb==NUM_UNDEF )   ||    ((ta==NUM_PINFTY) && (tb==NUM_MINFTY))  ||  ((tb==NUM_PINFTY) && (ta==NUM_MINFTY))  )
-    {
-        /* Si l'un des deux est une forme indeterminée ou que l'un est +inf et l'autre -inf   */
-        res=make_undef();
-    }
-
-    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )  )
-    {
-        /* Si l'un des deux est +inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(0);
-    }
-
-    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )  )
-    {
-        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(-1);
-    }
-
-
     else
     {
-        WARNING_MSG("Addition impossible");
-        res=nil;
+        res=car(Liste);
+        while (test!=nil)
+        {
+            res=add_num(res,oppose_num(car(test)));
+            test=cdr(test);
+        }
     }
-
     return res;
-
 }
 
 
-
-
-
-object sous_num(object A,object B)
+object prim_mult( object Liste )
 {
     object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) - (B->this.number.this.integer) );
-        return res;
-    }
+    object test=cdr(Liste);
 
+    if ( test==nil )
+    {
+        res=car(Liste);
+    }
     else
     {
-        WARNING_MSG("Soustraction impossible");
-        return nil;
+        res=car(Liste);
+        while (test!=nil)
+        {
+            res=mult_num(res,car(test));
+            test=cdr(test);
+        }
     }
-
+    return res;
 }
 
-object mult_num(object A,object B)
+object prim_div( object Liste )
 {
     object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) * (B->this.number.this.integer) );
-        return res;
-    }
+    object test=cdr(Liste);
 
+    object I=nil;
+
+    if ( test==nil )
+    {
+        res=inverse_num(car(Liste));
+    }
     else
     {
-        WARNING_MSG("Multiplication impossible");
-        return nil;
+        res=car(Liste);
+        while (test!=nil)
+        {
+            I=inverse_num(car(test));
+            sfs_print_atom(res);
+            sfs_print_atom(I);
+            res=mult_num(res,I);
+            test=cdr(test);
+        }
     }
-
+    return res;
 }
 
-object div_num(object A,object B)
+object prim_null(object A)
 {
-    object res=nil;
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        res=make_integer( (A->this.number.this.integer) / (B->this.number.this.integer) );
-        return res;
-    }
+    return prim_predicat(A,SFS_NIL);
+}
 
-    else
-    {
-        WARNING_MSG("Division impossible");
-        return nil;
-    }
+object prim_boolean(object A)
+{
+    return prim_predicat(A,SFS_BOOLEAN);
+}
 
+object prim_symbol(object A)
+{
+    return prim_predicat(A,SFS_SYMBOL);
+}
+
+object prim_char(object A)
+{
+    return prim_predicat(A,SFS_CHARACTER);
+}
+
+object prim_string(object A)
+{
+    return prim_predicat(A,SFS_STRING);
+}
+
+object prim_pair(object A)
+{
+    return prim_predicat(A,SFS_PAIR);
+}
+
+
+object prim_integer(object A)
+{
+    return prim_predicat_number(A,NUM_INTEGER);
+}
+
+object prim_real(object A)
+{
+    return prim_predicat_number(A,NUM_REAL);
+}
+
+object prim_pinfty(object A)
+{
+    return prim_predicat_number(A,NUM_PINFTY);
+}
+
+object prim_minfty(object A)
+{
+    return prim_predicat_number(A,NUM_MINFTY);
 }

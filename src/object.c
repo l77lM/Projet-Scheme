@@ -144,11 +144,11 @@ object make_infty(int i)
     object t = make_object( SFS_NUMBER );
 
     t->type = SFS_NUMBER;
-    if (i==0)
+    if (i==-1)
     {
         (t->this.number).numtype = NUM_MINFTY;
     }
-    if (i==-1)
+    if (i==0)
     {
         (t->this.number).numtype = NUM_PINFTY;
     }
@@ -531,3 +531,259 @@ void init_table()
     add_table("*");
     add_table("/");
 }
+
+
+object add_num(object A,object B)
+{
+    object res=nil;
+    uint ta=A->this.number.numtype;
+    uint tb=B->this.number.numtype;
+
+    if (   ( ( ta == NUM_INTEGER) || (ta==NUM_UINTEGER)   )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
+    {
+        /* Si A et B entiers */
+        res=make_integer( (A->this.number.this.integer) + (B->this.number.this.integer) );
+    }
+
+    else if    ( (ta==NUM_REAL )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
+    {
+        /* Si l'un des deux est entier et l'autre reel */
+        res=make_real( (A->this.number.this.real) + (B->this.number.this.integer) );
+    }
+
+    else if    ( (tb==NUM_REAL )  &&   ((ta==NUM_INTEGER) || (ta==NUM_UINTEGER) ) )
+    {
+        /* Si l'un des deux est entier et l'autre reel */
+        res=make_real( (B->this.number.this.real) + (A->this.number.this.integer) );
+    }
+
+    else if   ( ( ta==NUM_REAL )  &&   (tb==NUM_REAL) )
+    {
+        /* Si les deux sont reels */
+        res=make_real( (A->this.number.this.real) + (B->this.number.this.real) );
+    }
+
+    else if (  (ta==NUM_UNDEF )  ||  (tb==NUM_UNDEF )   ||    ((ta==NUM_PINFTY) && (tb==NUM_MINFTY))  ||  ((tb==NUM_PINFTY) && (ta==NUM_MINFTY))  )
+    {
+        /* Si l'un des deux est une forme indeterminée ou que l'un est +inf et l'autre -inf   */
+        res=make_undef();
+    }
+
+    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )  )
+    {
+        /* Si l'un des deux est +inf (l'autre est fini sinon on est sorti avant) */
+        res=make_infty(0);
+    }
+
+    else if (    (ta==NUM_MINFTY )   ||   (tb==NUM_MINFTY )   )
+    {
+        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
+        res=make_infty(-1);
+    }
+
+
+    else
+    {
+        WARNING_MSG("Addition impossible");
+        res=nil;
+    }
+
+    return res;
+
+}
+
+
+object oppose_num(object A)
+{
+    object res=nil;
+    uint ta=A->this.number.numtype;
+
+    if (ta==NUM_INTEGER || ta==NUM_UINTEGER)
+    {
+        res=make_integer(-(A->this.number.this.integer));
+    }
+
+    else if (ta==NUM_REAL)
+    {
+        res=make_real(-(A->this.number.this.real));
+    }
+
+    else if (ta==NUM_MINFTY)
+    {
+        res=make_infty(0);
+    }
+
+    else if (ta==NUM_PINFTY)
+    {
+        res=make_infty(-1);
+    }
+
+    else if (ta==NUM_UNDEF)
+    {
+        res=A;
+    }
+
+    else
+    {
+        WARNING_MSG("Opposé impossible");
+    }
+    return res;
+}
+
+
+object mult_num(object A,object B)
+{
+    object res=nil;
+    uint ta=A->this.number.numtype;
+    uint tb=B->this.number.numtype;
+
+    if (   ( ( ta == NUM_INTEGER) || (ta==NUM_UINTEGER)   )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
+    {
+        /* Si A et B entiers */
+        res=make_integer( (A->this.number.this.integer) * (B->this.number.this.integer) );
+    }
+
+    else if    ( (ta==NUM_REAL )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
+    {
+        /* Si l'un des deux est entier et l'autre reel */
+        res=make_real( (A->this.number.this.real) * (B->this.number.this.integer) );
+    }
+
+    else if    ( (tb==NUM_REAL )  &&   ((ta==NUM_INTEGER) || (ta==NUM_UINTEGER) ) )
+    {
+        /* Si l'un des deux est entier et l'autre reel */
+        res=make_real( (B->this.number.this.real) * (A->this.number.this.integer) );
+    }
+
+    else if   ( ( ta==NUM_REAL )  &&   (tb==NUM_REAL) )
+    {
+        /* Si les deux sont reels */
+        res=make_real( (A->this.number.this.real) * (B->this.number.this.real) );
+    }
+
+    else if (  (ta==NUM_UNDEF )  ||  (tb==NUM_UNDEF )  )
+    {
+        /* Si l'un des deux est une forme indeterminée   */
+        res=make_undef();
+    }
+
+    else if (    (ta==NUM_PINFTY && tb==NUM_MINFTY )   ||   (ta==NUM_MINFTY && tb==NUM_PINFTY )  )
+    {
+        /* Si on a (-inf)*(+inf) */
+        res=make_infty(-1);
+    }
+
+    else if (  (ta==NUM_MINFTY && tb==NUM_MINFTY )  )
+    {
+        /* Si on a (-inf)*(-inf) */
+        res=make_infty(0);
+    }
+
+
+    else if (    (ta==NUM_MINFTY )   ||   (tb==NUM_MINFTY )   )
+    {
+        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
+        res=make_infty(-1);
+    }
+
+    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )   )
+    {
+        /* Si l'un des deux est +inf (l'autre est fini ou (+inf) sinon on est sorti avant) */
+        res=make_infty(0);
+    }
+
+
+    else
+    {
+        WARNING_MSG("Multiplication impossible");
+        res=nil;
+    }
+
+    return res;
+
+
+}
+
+
+object inverse_num(object A)
+{
+    object res=nil;
+
+    uint ta=A->this.number.numtype;
+
+    if (ta==NUM_INTEGER || ta==NUM_UINTEGER)
+    {
+        float x=(A->this.number.this.integer);
+        res=make_real(1/x);
+    }
+
+    else if (ta==NUM_REAL)
+    {
+        float x=(A->this.number.this.real);
+        res=make_real(1/x);
+    }
+
+    else if (ta==NUM_MINFTY   ||  ta==NUM_PINFTY  || ta==NUM_UNDEF )
+    {
+        res=make_undef();
+    }
+
+    else
+    {
+        WARNING_MSG("Inverse impossible");
+    }
+    return res;
+}
+
+
+object prim_predicat(object Liste,uint type)
+{
+    if ( Liste==nil )
+    {
+        if ( type==SFS_NIL )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    object test=Liste;
+
+    while (test!=nil)
+    {
+        if (car(test)->type != type)
+        {
+            return false;
+        }
+        test=cdr(test);
+    }
+    return true;
+
+}
+
+object prim_predicat_number(object Liste,uint type)
+{
+    if ( Liste==nil )
+    {
+        return false;
+    }
+
+    object test=Liste;
+
+    while (test!=nil)
+    {
+        if ( car(test)->this.number.numtype != type)
+        {
+            return false;
+        }
+        test=cdr(test);
+    }
+    return true;
+
+}
+
+
+

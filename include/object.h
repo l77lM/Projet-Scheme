@@ -93,6 +93,13 @@ object add_table(char* nomsymb);
 void init_table();
 void affiche_table();
 
+object add_num(object A,object B);      /* Fonctions liées aux opérations de nombres  */
+object oppose_num(object A);
+object mult_num(object A,object B);
+object inverse_num(object A);
+
+object prim_predicat(object Liste,uint type);   /* Fonctions utiles aux primitives */
+object prim_predicat_number(object Liste,uint type);
 
 
 

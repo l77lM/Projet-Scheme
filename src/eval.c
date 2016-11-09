@@ -10,7 +10,7 @@
 #include "eval.h"
 #include "object.h"
 
-object sfs_eval( object input )        /* Tentative de prise en compte de l'environnement, Attention au main !!! */
+object sfs_eval( object input )
 {
     object output;
     int TEST;
@@ -151,49 +151,6 @@ debut:
                     object P=make_pair();
                     P->this.pair.car=sfs_eval(car(cdr(cdr(input))));
                     output->this.pair.cdr=P;
-                }
-
-
-                else if ( 0 == est_ident( symb, "-" ) )                                 /*  Soustraction  */
-                {
-                    object res=make_integer(0);
-                    object test=cdr(input);
-                    res=add_num(sfs_eval(res),sfs_eval(car(test)));
-                    test=cdr(test);
-                    while (test!=nil)
-                    {
-                        res=sous_num(sfs_eval(res),sfs_eval(car(test)));
-                        test=cdr(test);
-                    }
-                    output=res;
-                }
-
-                else if ( 0 == est_ident( symb, "*" ) )                                 /*  Multiplication  */
-                {
-                    object res=make_integer(0);
-                    object test=cdr(input);
-                    res=add_num(sfs_eval(res),sfs_eval(car(test)));
-                    test=cdr(test);
-                    while (test!=nil)
-                    {
-                        res=mult_num(sfs_eval(res),sfs_eval(car(test)));
-                        test=cdr(test);
-                    }
-                    output=res;
-                }
-
-                else if ( 0 == est_ident( symb, "/" ) )                                 /*  Division  */
-                {
-                    object res=make_integer(0);
-                    object test=cdr(input);
-                    res=add_num(sfs_eval(res),sfs_eval(car(test)));
-                    test=cdr(test);
-                    while (test!=nil)
-                    {
-                        res=div_num(sfs_eval(res),sfs_eval(car(test)));
-                        test=cdr(test);
-                    }
-                    output=res;
                 }
 
 
