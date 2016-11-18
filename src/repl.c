@@ -36,6 +36,7 @@ object false;
 object empty_list;
 object meta_env;
 object table_symbol;
+object Error;
 
 
 void init_interpreter ( void ) {
@@ -43,6 +44,7 @@ void init_interpreter ( void ) {
     nil      = make_nil();
     true     = init_boolean();
     false    = init_boolean();
+    Error    = make_nil();
 
     meta_env = make_pair();
     table_symbol=make_pair();
@@ -170,7 +172,12 @@ int main ( int argc, char *argv[] ) {
         printf( "==> " );
 	if( output-> type == SFS_PAIR) {printf("(");}
 
-    sfs_print( output );
+	object test=cherche_erreur(output);
+    if ( test!=Error)
+    {
+        sfs_print( output );
+    }
+
 	/*if( output-> type == SFS_PAIR) {printf(")");}*/
 	printf( "\n" );
     }

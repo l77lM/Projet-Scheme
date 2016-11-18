@@ -57,8 +57,8 @@ debut:
         }
         else
         {
-            WARNING_MSG("La variable \"%s\" n'est pas definie",input->this.symbol);
-            return nil;
+            WARNING_MSG("La variable n'est pas definie");
+            return Error;
         }
         break;
 
@@ -81,6 +81,23 @@ debut:
 
                 object Liste=cdr(input);
                 Liste=eval_arg(Liste);
+                if (Liste==nil)
+                {
+                    WARNING_MSG("Argument missing");
+                    if (est_ident(symbol(gauche),"+")==0 )
+                    {
+                        return make_integer(0);
+                    }
+                    else if (est_ident(symbol(gauche),"*")==0 )
+                    {
+                        return make_integer(1);
+                    }
+                    else
+                    {
+                        return nil;
+                    }
+
+                }
                 output=(*ptrPrim)(Liste);
             }
 
@@ -115,7 +132,8 @@ debut:
 
                     if(cdr(cdr(cdr(input)))!=nil)
                     {
-                        WARNING_MSG("Trop de parametres pour la fonction define");
+                        WARNING_MSG("Too many arguments for DEFINE");
+                        output=Error;
                     }
                 }
 
@@ -133,8 +151,8 @@ debut:
                     }
                     else
                     {
-                        WARNING_MSG("La variable n'est pas definie");
-                        output=nil;
+                        WARNING_MSG("Symbol not defined");
+                        output=Error;
                     }
                 }
 
@@ -143,26 +161,6 @@ debut:
 
                 {
                     output=car(cdr(input));
-                }
-
-                else if  ( 0 == est_ident( symb, "cons" ) )    /* A prendre comme une primitive plus tard */
-                {
-                    output->this.pair.car=sfs_eval(car(cdr(input)));
-                    object P=make_pair();
-                    P->this.pair.car=sfs_eval(car(cdr(cdr(input))));
-                    output->this.pair.cdr=P;
-                }
-
-
-                else if  (  0 == est_ident( symb, "car" )  )             /*  CAR  */
-                {
-                    output=sfs_eval(car(car(cdr(input))));
-                }
-
-
-                else if  (  0 == est_ident( symb, "cdr" )  )             /*  CDR  */
-                {
-                    output=sfs_eval(cdr(car(cdr(input))));
                 }
 
 
@@ -192,6 +190,7 @@ debut:
                     else
                     {
                         WARNING_MSG("Le prédicat n'est pas un booléen");
+                        return Error;
                     }
 
                 }
@@ -201,11 +200,13 @@ debut:
                 {
                     if ( cdr(input)==nil )
                     {
-                        ERROR_MSG("Pas assez d'argument pour \"and\"\n");
+                        ERROR_MSG("Not enough argument for AND\n");
+                        return Error;
                     }
                     if ( cdr(cdr(input))==nil )
                     {
-                        ERROR_MSG("Pas assez d'argument pour \"and\"\n");
+                        ERROR_MSG("Not enough argument for AND\n");
+                        return Error;
                     }
 
                     object test=cdr(input);
@@ -228,11 +229,13 @@ debut:
                 {
                     if ( cdr(input)==nil )
                     {
-                        ERROR_MSG("Pas assez d'argument pour \"or\"\n");
+                        WARNING_MSG("Not enough argument for OR\n");
+                        return Error;
                     }
                     if ( cdr(cdr(input))==nil )
                     {
-                        ERROR_MSG("Pas assez d'argument pour \"or\"\n");
+                        WARNING_MSG("Not enough argument for OR\n");
+                        return Error;
                     }
 
                     object test=cdr(input);
@@ -250,11 +253,6 @@ debut:
 
                 }
 
-                else if (  0== est_ident( symb, "<" ) || 0== est_ident( symb, ">" ) ||  0== est_ident( symb, "=" ) )
-                {
-                    output=eval_bool(input);
-                }
-
                 else
                 {
                     object test=cherche_symbol(meta_env,gauche);
@@ -265,7 +263,8 @@ debut:
                     }
                     else
                     {
-                        WARNING_MSG("La variable \"%s\" n'est pas definie",input->this.symbol);
+                        WARNING_MSG("La variable n'est pas definie");
+                        return Error;
                     }
 
                 }
@@ -277,9 +276,12 @@ debut:
 
         else
         {
-
+            WARNING_MSG("Fonction inconnue");
+            output=Error;
+            /*
             output->this.pair.car=sfs_eval(car(input));
             output->this.pair.cdr=sfs_eval(cdr(input));
+            */
         }
 
         return output;
@@ -288,5 +290,5 @@ debut:
 
     }
 
-    return nil ; /*fonciton doit renvoyer dans tous les cas un objet*/
+    return nil ; /*fonction doit renvoyer dans tous les cas un objet*/
 }

@@ -1,5 +1,5 @@
 ; TEST_RETURN_CODE=PASS
-; TEST_COMMENT=Test read basic chars
+; TEST_COMMENT=Test operation entier
 
 (+ 1 2)
 (+ +1 +2)
@@ -25,5 +25,4 @@
 (/ 64 2 2 2 2 2 2)
 	
 (/ (+ 10 30 2) (* 3 (- 13 6)))
-;;; Make sure you put a return at
-;;; the end of the input file
+

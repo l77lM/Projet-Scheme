@@ -10,6 +10,11 @@ void init_primitives(void)
     save_primitive("-",prim_moins);
     save_primitive("*",prim_mult);
     save_primitive("/",prim_div);
+    save_primitive("quotient",prim_quotient);
+    save_primitive("remainder",prim_remainder);
+    save_primitive("=",prim_egalite);
+    save_primitive(">",prim_sup);
+    save_primitive("<",prim_inf);
 
     save_primitive("null?",prim_null);
     save_primitive("boolean?",prim_boolean);
@@ -21,6 +26,24 @@ void init_primitives(void)
     save_primitive("real?",prim_real);
     save_primitive("pinfty?",prim_pinfty);
     save_primitive("minfty?",prim_minfty);
+
+    save_primitive("integer->char",prim_conv_intchar);
+    save_primitive("char->integer",prim_conv_charint);
+    save_primitive("string->number",prim_conv_strnum);
+    save_primitive("number->string",prim_conv_numstr);
+    save_primitive("symbol->string",prim_conv_symbstr);
+    save_primitive("string->symbol",prim_conv_strsymb);
+
+
+    save_primitive("cons",prim_cons);
+    save_primitive("car",prim_car);
+    save_primitive("cdr",prim_cdr);
+    save_primitive("set-car!",prim_setcar);
+    save_primitive("set-cdr!",prim_setcdr);
+    save_primitive("list",prim_list);
+
+    save_primitive("eq?",prim_eq);
+    save_primitive("abs",prim_abs);
 }
 
 
@@ -28,8 +51,33 @@ void init_primitives(void)
 object eval_arg(object A)
 {
     /* Evalue la liste des arguments d'une primitive */
-    return sfs_eval(A);
+    object output;
+    if ( A->type==SFS_NIL )
+        return nil;
+
+    else
+    {
+        A->this.pair.car=sfs_eval(car(A));
+        A->this.pair.cdr=eval_arg(cdr(A));
+        return A;
+    }
+
+/*
+    if ( A->type==SFS_PAIR && ( (car(A))->type != SFS_SYMBOL) )
+    {
+        output=make_pair();
+        output->this.pair.car=eval_arg(car(A));
+        output->this.pair.cdr=eval_arg(cdr(A));
+    }
+    else
+    {
+        output=sfs_eval(A);
+    }
+
+    return output;
+*/
 }
+
 
 object save_primitive( char* nom, object (*ptrPrim)(object) )
 {
@@ -38,11 +86,9 @@ object save_primitive( char* nom, object (*ptrPrim)(object) )
     object symb=make_symbol(nom);
     object A=add_symb(meta_env,symb,prim);
 
-    sfs_print_env(meta_env);    /*DEbug */
+    /*sfs_print_env(meta_env);*/    /*DEbug */
     return A;
 }
-
-
 
 
 object prim_plus( object Liste )
@@ -56,6 +102,45 @@ object prim_plus( object Liste )
     }
     return res;
 }
+
+
+object prim_egalite( object Liste )
+{
+    if (cdr(Liste)==nil)
+    {
+        WARNING_MSG("Pas assez d'elements");
+        return Error;
+    }
+    object test=cdr(Liste);
+    int egal=0;
+
+    object A=nil;
+    object B=car(Liste);
+
+    while (test!=nil)
+    {
+        A=B;
+        B=car(test);
+
+        if (A==Error || B==Error)
+        {
+            return Error;
+        }
+
+        egal=egalite_num(A,B);
+
+        if (egal==-1)
+        {
+            return false;
+        }
+
+        test=cdr(test);
+    }
+    return true;
+}
+
+
+
 
 
 object prim_moins( object Liste)
@@ -118,8 +203,6 @@ object prim_div( object Liste )
         while (test!=nil)
         {
             I=inverse_num(car(test));
-            sfs_print_atom(res);
-            sfs_print_atom(I);
             res=mult_num(res,I);
             test=cdr(test);
         }
@@ -157,7 +240,6 @@ object prim_pair(object A)
     return prim_predicat(A,SFS_PAIR);
 }
 
-
 object prim_integer(object A)
 {
     return prim_predicat_number(A,NUM_INTEGER);
@@ -176,4 +258,488 @@ object prim_pinfty(object A)
 object prim_minfty(object A)
 {
     return prim_predicat_number(A,NUM_MINFTY);
+}
+
+object prim_quotient(object Liste)
+{
+     if (prim_integer(Liste)==false)
+    {
+        WARNING_MSG("Entrez un entier plutot c'est mieux");
+        return Error;
+    }
+    object A=car(Liste);
+
+    /*if(A->this.number.numtype!=NUM_INTEGER)                             ---Methode 2 ---
+        {
+            WARNING_MSG("Entrez un entier plutot c'est mieux");
+            return nil;
+
+        }*/
+
+    object test=cdr(Liste);
+    if (test==nil)
+    {
+        WARNING_MSG("Pas assez d'élément");
+        return Error;
+
+    }
+
+    object B=car(test);
+
+    int res=(A->this.number.this.integer)/(B->this.number.this.integer);
+
+    return( make_integer(res) );
+}
+
+object prim_remainder(object Liste)
+{
+    if (prim_integer(Liste)==false)
+    {
+        WARNING_MSG("Entrez un entier plutot c'est mieux");
+        return Error;
+    }
+    object A=car(Liste);
+
+    object test=cdr(Liste);
+    if (test==nil)
+    {
+        WARNING_MSG("Pas assez d'élément");
+         return Error;
+    }
+    object B=car(test);
+
+    if (A==Error || B==Error)
+    {
+        return Error;
+    }
+
+    int res=(A->this.number.this.integer)%(B->this.number.this.integer);
+
+    return( make_integer(res) );
+}
+
+object prim_inf( object Liste )
+{
+    if (cdr(Liste)==nil)
+    {
+        WARNING_MSG("Pas assez d'elements");
+        return Error;
+    }
+    object test=cdr(Liste);
+    int egal=0;
+
+    object A=nil;
+    object B=car(Liste);
+
+    while (test!=nil)
+    {
+        A=B;
+        B=car(test);
+        egal=compare_num(A,B);
+
+        if (egal==1)
+        {
+            return false;
+        }
+
+        if (egal==0)
+        {
+            WARNING_MSG("Comparaison impossible");
+            return Error;
+        }
+
+        test=cdr(test);
+    }
+    return true;
+}
+
+object prim_sup( object Liste )
+{
+    if (cdr(Liste)==nil)
+    {
+        WARNING_MSG("Pas assez d'elements");
+        return Error;
+    }
+    object test=cdr(Liste);
+    int egal=0;
+
+    object A=nil;
+    object B=car(Liste);
+
+    while (test!=nil)
+    {
+        A=B;
+        B=car(test);
+        egal=compare_num(A,B);
+
+        if (egal==-1)
+        {
+            return false;
+        }
+
+        if (egal==0)
+        {
+            WARNING_MSG("Comparaison impossible");
+            return Error;
+        }
+
+        test=cdr(test);
+    }
+    return true;
+}
+
+
+object prim_conv_intchar(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Trop d'element");
+        return Error;
+    }
+
+    object A=car(Liste);
+    char a;
+
+    if  (A->type == SFS_NUMBER)
+    {
+        if ( (A->this.number.numtype == NUM_INTEGER)  || (A->this.number.numtype == NUM_UINTEGER))
+        {
+             a=(A->this.number.this.integer);
+             if ( (a>-1) && (a<256) )
+             {
+                 return (make_character(a));
+             }
+       }
+    }
+    WARNING_MSG("Integer->charactere impossible");
+    return Error;
+}
+
+
+object prim_conv_charint(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for charactere->integer");
+        return Error;
+    }
+
+    object A=car(Liste);
+    int a;
+
+    if  (A->type == SFS_CHARACTER)
+    {
+        a=A->this.character;
+        return (make_integer(a));
+    }
+    WARNING_MSG("Charactere->integer impossible");
+    return Error;
+}
+
+object prim_conv_symbstr(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for symbol->string");
+        return Error;
+    }
+    object A=car(Liste);
+
+    if  (A->type == SFS_SYMBOL)
+    {
+        return make_string(A->this.symbol);
+    }
+    WARNING_MSG("symbol->string impossible");
+    return Error;
+}
+
+object prim_conv_strsymb(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for string->symbol");
+        return Error;
+    }
+    object A=car(Liste);
+    if  (A->type == SFS_STRING)
+    {
+        return make_symbol(A->this.string);
+    }
+    WARNING_MSG("string->symbol impossible");
+    return Error;
+}
+
+object prim_conv_strnum(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for string->number");
+        return Error;
+    }
+    object A=car(Liste);
+    object res=nil;
+    if  (A->type == SFS_STRING)
+    {
+        res=sfs_read_atom(A->this.string);
+        if (res->type == SFS_NUMBER)
+        {
+            return res;
+        }
+        else
+        {
+            WARNING_MSG("Argument of string->number is not a number");
+            return Error;
+        }
+    }
+    else
+    {
+        WARNING_MSG("string->number impossible");
+        return Error;
+    }
+}
+
+object prim_conv_numstr(object Liste)
+{
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for number->string");
+        return Error;
+    }
+    object A=car(Liste);
+    if  (A->type == SFS_NUMBER)
+    {
+        int ta=A->this.number.numtype;
+        float num;
+
+        if ( ta == NUM_INTEGER || ta == NUM_UINTEGER )
+        {
+            num=A->this.number.this.integer ;
+        }
+
+        else if ( ta == NUM_REAL )
+        {
+            num=A->this.number.this.real ;
+        }
+
+        else if ( ta == NUM_PINFTY )
+        {
+            return make_string("PINFTY");
+        }
+
+        else if ( ta == NUM_MINFTY )
+        {
+            return make_string("+inf");
+        }
+
+        else if ( ta == NUM_UNDEF )
+        {
+            return make_string("-inf");
+        }
+
+        char* str;
+        sprintf(str,"%g", num);
+        return make_string(str);
+
+    }
+    else
+    {
+        WARNING_MSG("number->string impossible");
+        return Error;
+    }
+}
+
+object prim_cons(object Liste)
+{
+    object res=make_pair();
+    res->this.pair.car=car(Liste);
+    res->this.pair.cdr=car(cdr(Liste));
+    if ( cdr(cdr(Liste)) != nil )
+    {
+        WARNING_MSG("Trop d'elements pour cons");
+        res=Error;
+    }
+    return res;
+}
+
+object prim_car(object Liste)
+{
+    return car(car(Liste));
+}
+
+object prim_cdr(object Liste)
+{
+    return cdr(car(Liste));
+}
+
+object prim_setcar(object Liste)
+{
+    DEBUG_MSG("Set-car!");
+    if ( (car(Liste)->type) != SFS_PAIR )
+    {
+        WARNING_MSG("non-pair argument to set-car!");
+        return Error;
+    }
+    if ( (cdr(Liste)->type) != SFS_PAIR )
+    {
+        WARNING_MSG("Immutable argument to set-car!");
+        return Error;
+    }
+
+    (Liste->this.pair.car)->this.pair.car = car(cdr(Liste));
+    return car(Liste);
+}
+
+object prim_setcdr(object Liste)
+{
+    DEBUG_MSG("Set_cdr!");
+    if ( (car(Liste)->type) != SFS_PAIR )
+    {
+        WARNING_MSG("non-pair argument to set-car!");
+        return Error;
+    }
+    if ( (cdr(Liste)->type) != SFS_PAIR )
+    {
+        WARNING_MSG("Immutable argument to set-car!");
+        return Error;
+    }
+
+    (Liste->this.pair.car)->this.pair.cdr = car(cdr(Liste));
+    return car(Liste);
+}
+
+object prim_list(object Liste)
+{
+    return Liste;
+}
+
+object prim_eq(object Liste)
+{
+    DEBUG_MSG("EQ?");
+    if (cdr(Liste)==nil)
+    {
+        WARNING_MSG("Not enough arguments");
+        return Error;
+    }
+
+    object test=cdr(Liste);
+
+    object A=nil;
+    object B=car(Liste);
+    int ta;
+    int tb;
+    int egal;
+
+    while (test!=nil)
+    {
+        A=B;
+        B=car(test);
+        ta=A->type;
+        tb=B->type;
+
+        if (ta!=tb)
+        {
+            egal=-1;
+        }
+
+        else if (ta==SFS_NUMBER)
+        {
+            egal=egalite_num(A,B);
+        }
+
+        else if ( (ta==SFS_CHARACTER) || (ta==SFS_STRING) || (ta==SFS_SYMBOL) )
+        {
+            egal=compare_char(A,B);
+        }
+
+        else if (  (ta==SFS_NIL) || ( (A==true) && (B==true) ) || ( (A==false) && (B==false) ) )
+        {
+            egal=0;
+        }
+
+        else if ( ta==SFS_PRIMITIVE)
+        {
+            if (A->this.primitive.function == B->this.primitive.function)
+            {
+                egal=0;
+            }
+            else
+            {
+                egal=-1;
+            }
+        }
+
+        else
+        {
+            egal=-1;
+        }
+
+
+        if (egal!=0)
+        {
+            return false;
+        }
+
+        test=cdr(test);
+    }
+    return true;
+}
+
+object prim_abs(object Liste)
+{
+    DEBUG_MSG("ABS");
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for number->string");
+        return Error;
+    }
+    object A=car(Liste);
+
+    if ( A->type != SFS_NUMBER )
+    {
+        return Error;
+    }
+
+
+    object res;
+
+    int ta=A->this.number.numtype;
+
+    if (ta==NUM_INTEGER || ta==NUM_UINTEGER)
+    {
+        int x=(A->this.number.this.integer);
+        if (x<0)
+        {
+            res=make_integer(-x);
+        }
+        else
+        {
+            res=A;
+        }
+
+    }
+
+    else if (ta==NUM_REAL)
+    {
+        float x=(A->this.number.this.real);
+        if (x<0)
+        {
+            res=make_real(-x);
+        }
+        else
+        {
+            res=A;
+        }
+    }
+
+    else if (ta==NUM_MINFTY   ||  ta==NUM_PINFTY  || ta==NUM_UNDEF )
+    {
+        res=make_undef();
+    }
+
+    else
+    {
+        WARNING_MSG("ABS impossible");
+        return Error;
+    }
+    return res;
 }

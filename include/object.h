@@ -79,28 +79,19 @@ object car(object paire);
 object cdr(object paire);
 
 
-object compare_num(object A,object B);
-
-
 object predicat(object A);              /* Fonctions liées à if   */
 object consequence(object A);
 object alternative(object A);
 
-object eval_bool(object A);
 
 object exist_symb(char* nomsymb);       /* Fonctions liées à la table de symbole */
 object add_table(char* nomsymb);
 void init_table();
 void affiche_table();
 
-object add_num(object A,object B);      /* Fonctions liées aux opérations de nombres  */
-object oppose_num(object A);
-object mult_num(object A,object B);
-object inverse_num(object A);
+char* symbol(object symb);
 
-object prim_predicat(object Liste,uint type);   /* Fonctions utiles aux primitives */
-object prim_predicat_number(object Liste,uint type);
-
+object cherche_erreur(object A);
 
 
 #define SFS_NUMBER       0x00
@@ -125,6 +116,8 @@ extern object empty_list;
 extern object meta_env;
 
 extern object table_symbol;
+
+extern object Error;
 
 #ifdef __cplusplus
 }

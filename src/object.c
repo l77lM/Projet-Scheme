@@ -26,8 +26,6 @@ object make_object( uint type )
 
 object make_primitive(object (*ptrPrim)(object))
 {
-    printf("make_primitive ");  /* Debug */
-
     object prim=make_object(SFS_PRIMITIVE);
 
     (prim->this).primitive.function=ptrPrim;
@@ -64,7 +62,7 @@ object make_boolean( uint test )
 
     else
     {
-        printf("\nBooleen non reconnu\n");
+        WARNING_MSG("Booleen non reconnu");
         return NULL ;
     }
     return t;
@@ -246,8 +244,6 @@ object add_symb(object env,object var,object val)
 
     (env->this).pair.cdr = newnoeud ;
 
-    /*printf("Ajout symbole\n");*/
-
     return VAR;
 
 }
@@ -258,8 +254,6 @@ object is_symb(object env,object symb)
 
     object test=nil;
     object ptr=cdr(env);
-
-    /*printf("Is symbol\n");*/
 
     while (ptr!=nil)
     {
@@ -278,13 +272,9 @@ object cherche_symbol(object env,object symb)
 {
     /* Cherche un symbole dans l'environnement et les environnements inferieurs  */
 
-    /*printf("Cherche symbol\n");*/
-
     if (env==nil)
     {
         return nil;
-
-        /* printf("Symbol not found"); */
     }
 
     object test=is_symb(env,symb);
@@ -305,9 +295,6 @@ object cherche_symbol(object env,object symb)
 object modif_symbole_env(object env,object symb,object val)
 {
     /* Cette fonction retourne l'adresse de la paire contenant le symbole et sa valeur modifiée. Renvoie nil si le symbole n'existe pas */
-
-    /*printf("Modif symbol\n");*/
-
     object test=cherche_symbol(env,symb);
 
     if (test!=nil)
@@ -318,8 +305,9 @@ object modif_symbole_env(object env,object symb,object val)
 }
 
 
-int est_ident(char* c1,char* c2)  /* Si renvoie 0 alors les chaines sont identiques */
+int est_ident(char* c1,char* c2)
 {
+    /* Renvoie 0 si les chaines sont identiques */
     return strcmp( c1, c2);
 }
 
@@ -332,8 +320,8 @@ object car(object paire)
     }
     else
     {
-        printf("Le car n'est pas une paire \n");
-        return nil;
+        WARNING_MSG("CAR is not a pair");
+        return Error;
     }
 }
 
@@ -345,57 +333,12 @@ object cdr(object paire)
     }
     else
     {
-        printf("Le cdr n'est pas une paire");
-        return nil;
+        WARNING_MSG("CDR is not a pair");
+        return Error;
     }
 }
 
 
-
-
-object compare_num(object A,object B)
-{
-    /* Renvoie true si A > B  false sinon */
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        if ( (A->this.number.this.integer) > (B->this.number.this.integer) )
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    else
-    {
-        WARNING_MSG("comparaison impossible");
-        return nil;
-    }
-}
-
-object egal_num(object A,object B)
-{
-    /* Renvoie true si A = B  false sinon */
-    if (   ( (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_UINTEGER)   )  &&   ((B->this.number.numtype==NUM_INTEGER) || (B->this.number.numtype==NUM_UINTEGER) ) )
-    {
-        if ( (A->this.number.this.integer) == (B->this.number.this.integer) )
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    else
-    {
-        WARNING_MSG("comparaison impossible");
-        return nil;
-    }
-}
 
 
 object predicat(object A)
@@ -418,53 +361,13 @@ object alternative(object A)
         output=sfs_eval(car(test));
         if (cdr(test)!=nil)
         {
-            WARNING_MSG("Trop de parametres pour la fonction \"if\"\n");
+            WARNING_MSG("Too many arguments for IF");
         }
     }
     return output;
 }
 
-object eval_bool(object A)
-{
-    if (A==true || A==false)
-    {
-        return A;
-    }
 
-    else if (A->type==SFS_PAIR)
-    {
-        char*symb=(car(A))->this.symbol;
-        object gauche=sfs_eval(car(cdr(A)));
-        object droite=sfs_eval(car(cdr(cdr(A))));
-        object output=nil;
-
-        if (  0 == est_ident( symb, ">" )  )
-        {
-            output=compare_num(gauche,droite);
-        }
-
-        if (  0 == est_ident( symb, "<" )  )
-        {
-            output=compare_num(droite,gauche);
-        }
-
-        if (  0 == est_ident( symb, "=" )  )
-        {
-            output=egal_num(gauche,droite);
-        }
-
-        else
-        {
-            WARNING_MSG("Pas d'évaluation possible pour le booléen");
-        }
-        return output;
-    }
-
-    else
-    {
-        WARNING_MSG("Pas d'évaluation possible pour le booléen");
-    }
-}
 
 
 object add_table(char* nomsymb)
@@ -532,258 +435,40 @@ void init_table()
     add_table("/");
 }
 
-
-object add_num(object A,object B)
+char* symbol(object symb)
 {
-    object res=nil;
-    uint ta=A->this.number.numtype;
-    uint tb=B->this.number.numtype;
-
-    if (   ( ( ta == NUM_INTEGER) || (ta==NUM_UINTEGER)   )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
-    {
-        /* Si A et B entiers */
-        res=make_integer( (A->this.number.this.integer) + (B->this.number.this.integer) );
-    }
-
-    else if    ( (ta==NUM_REAL )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (A->this.number.this.real) + (B->this.number.this.integer) );
-    }
-
-    else if    ( (tb==NUM_REAL )  &&   ((ta==NUM_INTEGER) || (ta==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (B->this.number.this.real) + (A->this.number.this.integer) );
-    }
-
-    else if   ( ( ta==NUM_REAL )  &&   (tb==NUM_REAL) )
-    {
-        /* Si les deux sont reels */
-        res=make_real( (A->this.number.this.real) + (B->this.number.this.real) );
-    }
-
-    else if (  (ta==NUM_UNDEF )  ||  (tb==NUM_UNDEF )   ||    ((ta==NUM_PINFTY) && (tb==NUM_MINFTY))  ||  ((tb==NUM_PINFTY) && (ta==NUM_MINFTY))  )
-    {
-        /* Si l'un des deux est une forme indeterminée ou que l'un est +inf et l'autre -inf   */
-        res=make_undef();
-    }
-
-    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )  )
-    {
-        /* Si l'un des deux est +inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(0);
-    }
-
-    else if (    (ta==NUM_MINFTY )   ||   (tb==NUM_MINFTY )   )
-    {
-        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(-1);
-    }
-
-
-    else
-    {
-        WARNING_MSG("Addition impossible");
-        res=nil;
-    }
-
-    return res;
-
+    return symb->this.symbol;
 }
 
 
-object oppose_num(object A)
+object cherche_erreur(object A)
 {
-    object res=nil;
-    uint ta=A->this.number.numtype;
-
-    if (ta==NUM_INTEGER || ta==NUM_UINTEGER)
+    if (A==Error)
     {
-        res=make_integer(-(A->this.number.this.integer));
+        DEBUG_MSG("cherche_erreur trouve erreur");
+        return Error;
     }
-
-    else if (ta==NUM_REAL)
+    else if (A->type==SFS_PAIR)
     {
-        res=make_real(-(A->this.number.this.real));
-    }
-
-    else if (ta==NUM_MINFTY)
-    {
-        res=make_infty(0);
-    }
-
-    else if (ta==NUM_PINFTY)
-    {
-        res=make_infty(-1);
-    }
-
-    else if (ta==NUM_UNDEF)
-    {
-        res=A;
-    }
-
-    else
-    {
-        WARNING_MSG("Opposé impossible");
-    }
-    return res;
-}
-
-
-object mult_num(object A,object B)
-{
-    object res=nil;
-    uint ta=A->this.number.numtype;
-    uint tb=B->this.number.numtype;
-
-    if (   ( ( ta == NUM_INTEGER) || (ta==NUM_UINTEGER)   )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
-    {
-        /* Si A et B entiers */
-        res=make_integer( (A->this.number.this.integer) * (B->this.number.this.integer) );
-    }
-
-    else if    ( (ta==NUM_REAL )  &&   ((tb==NUM_INTEGER) || (tb==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (A->this.number.this.real) * (B->this.number.this.integer) );
-    }
-
-    else if    ( (tb==NUM_REAL )  &&   ((ta==NUM_INTEGER) || (ta==NUM_UINTEGER) ) )
-    {
-        /* Si l'un des deux est entier et l'autre reel */
-        res=make_real( (B->this.number.this.real) * (A->this.number.this.integer) );
-    }
-
-    else if   ( ( ta==NUM_REAL )  &&   (tb==NUM_REAL) )
-    {
-        /* Si les deux sont reels */
-        res=make_real( (A->this.number.this.real) * (B->this.number.this.real) );
-    }
-
-    else if (  (ta==NUM_UNDEF )  ||  (tb==NUM_UNDEF )  )
-    {
-        /* Si l'un des deux est une forme indeterminée   */
-        res=make_undef();
-    }
-
-    else if (    (ta==NUM_PINFTY && tb==NUM_MINFTY )   ||   (ta==NUM_MINFTY && tb==NUM_PINFTY )  )
-    {
-        /* Si on a (-inf)*(+inf) */
-        res=make_infty(-1);
-    }
-
-    else if (  (ta==NUM_MINFTY && tb==NUM_MINFTY )  )
-    {
-        /* Si on a (-inf)*(-inf) */
-        res=make_infty(0);
-    }
-
-
-    else if (    (ta==NUM_MINFTY )   ||   (tb==NUM_MINFTY )   )
-    {
-        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(-1);
-    }
-
-    else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )   )
-    {
-        /* Si l'un des deux est +inf (l'autre est fini ou (+inf) sinon on est sorti avant) */
-        res=make_infty(0);
-    }
-
-
-    else
-    {
-        WARNING_MSG("Multiplication impossible");
-        res=nil;
-    }
-
-    return res;
-
-
-}
-
-
-object inverse_num(object A)
-{
-    object res=nil;
-
-    uint ta=A->this.number.numtype;
-
-    if (ta==NUM_INTEGER || ta==NUM_UINTEGER)
-    {
-        float x=(A->this.number.this.integer);
-        res=make_real(1/x);
-    }
-
-    else if (ta==NUM_REAL)
-    {
-        float x=(A->this.number.this.real);
-        res=make_real(1/x);
-    }
-
-    else if (ta==NUM_MINFTY   ||  ta==NUM_PINFTY  || ta==NUM_UNDEF )
-    {
-        res=make_undef();
-    }
-
-    else
-    {
-        WARNING_MSG("Inverse impossible");
-    }
-    return res;
-}
-
-
-object prim_predicat(object Liste,uint type)
-{
-    if ( Liste==nil )
-    {
-        if ( type==SFS_NIL )
+        DEBUG_MSG("cherche_erreur paire");
+        object res=cherche_erreur(car(A));
+        if (res==Error)
         {
-            return true;
+            return Error;
+        }
+        res=cherche_erreur(cdr(A));
+        if (res==Error)
+        {
+            return Error;
         }
         else
         {
-            return false;
+            return nil;
         }
     }
-
-    object test=Liste;
-
-    while (test!=nil)
+    else
     {
-        if (car(test)->type != type)
-        {
-            return false;
-        }
-        test=cdr(test);
+        DEBUG_MSG("cherche_erreur test");
+        return nil;
     }
-    return true;
-
 }
-
-object prim_predicat_number(object Liste,uint type)
-{
-    if ( Liste==nil )
-    {
-        return false;
-    }
-
-    object test=Liste;
-
-    while (test!=nil)
-    {
-        if ( car(test)->this.number.numtype != type)
-        {
-            return false;
-        }
-        test=cdr(test);
-    }
-    return true;
-
-}
-
-
-

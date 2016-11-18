@@ -112,10 +112,17 @@ void sfs_print_pair( object o )
         printf(")");
     }
 
-    else
+    else if (o -> this.pair.cdr -> type == SFS_PAIR)
     {
         printf(" ");
         sfs_print( (o -> this).pair.cdr );
+    }
+
+    else
+    {
+        printf(" . ");
+        sfs_print( (o -> this).pair.cdr );
+        printf(")");
     }
 
 

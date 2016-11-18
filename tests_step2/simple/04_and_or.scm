@@ -1,5 +1,5 @@
 ; TEST_RETURN_CODE=PASS
-; TEST_COMMENT=Test read basic integers
+; TEST_COMMENT=Test and et or
 
 (and #f #t)
 (and #t #f)
