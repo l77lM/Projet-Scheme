@@ -56,6 +56,7 @@ object prim_list(object Liste);
 
 object prim_eq(object Liste);
 object prim_abs(object A);
+object prim_round (object A);
 
 
 

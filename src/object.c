@@ -320,8 +320,8 @@ object car(object paire)
     }
     else
     {
-        WARNING_MSG("CAR is not a pair");
-        return Error;
+        DEBUG_MSG("CAR is not a pair");
+        return NULL;
     }
 }
 
@@ -333,8 +333,8 @@ object cdr(object paire)
     }
     else
     {
-        WARNING_MSG("CDR is not a pair");
-        return Error;
+        DEBUG_MSG("CDR is not a pair");
+        return NULL;
     }
 }
 

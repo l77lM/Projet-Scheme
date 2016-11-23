@@ -365,8 +365,6 @@ object sfs_read( char *input, uint *here )
 
     else
     {
-
-
         return sfs_read_atom( input, here );
     }
 }
@@ -505,19 +503,45 @@ object sfs_read_atom( char *input, uint *here )
         else if (car2=='\\')
         {
             /*on suppose le mot lu de taille < 50  et on stocke newline et space ss forme de symbole 		 				#backslashnewline*/
-            char lu[50];
+            /*char lu[50];
+            sscanf(input+(*here),"%s",lu);*/
+            /*lu=strtok(lu,")");*/
+            DEBUG_MSG("Lecture charactere");
+
+
+            char *lu=malloc((strlen(input+(*here))+1)*sizeof(char));
+            strcpy(lu, (input+(*here)) );
+
             sscanf(input+(*here),"%s",lu);
+            lu=strtok(lu,")");
 
-            if (strcmp(lu,"#\\newline")==0)
-                atom=make_symbol(lu);
-
-            if (strcmp(lu,"#\\space")==0)
-                atom=make_symbol(lu);
-
-            if (strlen(lu)==3)
+            if   (strcmp(lu,"#\\newline")==0)
             {
+                DEBUG_MSG("newline");
+                atom=make_character('\n');
+                *(here)=*(here)+strlen(lu);
+            }
+
+            else if   (strcmp(lu,"#\\space")==0)
+            {
+                DEBUG_MSG("space");
+                atom=make_character(' ');
+                *(here)=*(here)+strlen(lu);
+            }
+
+
+
+            else if (strlen(lu)==3)
+            {
+                DEBUG_MSG("char taille 3");
                 atom=make_character(input[(*here)+2]);
                 (*here)+=3;
+            }
+
+            else
+            {
+                ERROR_MSG("Character unknown");
+                return NULL;
             }
         }
     }
@@ -563,7 +587,7 @@ object sfs_read_pair( char *stream, uint *i )
 
     char car1 = stream[(*i)];
 
-    while ((car1==' ')|| (car1=='\t')||(car1=='\n') )
+    while ((car1==' ')|| (car1=='\t') || (car1=='\n') )
     {
         (*i)++;
         car1 = stream[(*i)];
@@ -580,6 +604,44 @@ object sfs_read_pair( char *stream, uint *i )
     object pair= make_pair();
 
     (pair->this.pair.car)= sfs_read(stream,i);
+
+    if (car(pair)->type==SFS_SYMBOL)
+    {
+        DEBUG_MSG("car(pair) = symb");
+        if   (  est_ident(symbol(car(pair)),".") == 0 )
+        {
+            DEBUG_MSG("Paire . incomplete");
+            /*(*i)+=1;*/
+            object retour=sfs_read(stream,i);
+
+            /*sfs_print_atom(retour);*/
+
+            while ((car1==' ')|| (car1=='\t') || (car1=='\n') )
+            {
+                (*i)++;
+                car1 = stream[(*i)];
+            } /*Permet d'éliminer les espaces et tabulations qui generaient la lecture du code*/
+
+            if (stream[(*i)] == ')')
+            {
+                return retour;
+            }
+
+            else
+            {
+                (*i)++;
+                return sfs_read_pair(stream,i);
+                /*(pair->this.pair.cdr)= sfs_read_pair(stream,i);*/
+            }
+            /*return sfs_read(stream,i);*/
+
+
+            /*
+            sfs_print_atom(cdr(pair));
+            return pair;
+            */
+        }
+    }
 
     (pair->this.pair.cdr)= sfs_read_pair(stream,i);
 

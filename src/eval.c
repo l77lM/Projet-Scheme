@@ -92,9 +92,15 @@ debut:
                     {
                         return make_integer(1);
                     }
-                    else
+
+                    else if (est_ident(symbol(gauche),"list")==0 )
                     {
                         return nil;
+                    }
+
+                    else
+                    {
+                        return Error;
                     }
 
                 }

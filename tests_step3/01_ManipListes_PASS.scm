@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;; Script de test ;;;;;;;;;;;;;;;;
 ; TEST_RETURN_CODE=PASS
-; TEST_COMMENT= test manipulation de listes
+; TEST_COMMENT= Test manipulation de listes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 (cons 'a '())
@@ -16,8 +16,8 @@
 (cdr '((a) b c d))
 (cdr '(1 . 2))
 
-(define mypair (cons 1 3))
-mypair
+(define paire (cons 1 3))
+paire
 (set-car! mypair 4)
 (set-cdr! mypair 6)
 

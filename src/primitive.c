@@ -44,6 +44,7 @@ void init_primitives(void)
 
     save_primitive("eq?",prim_eq);
     save_primitive("abs",prim_abs);
+    save_primitive("round",prim_round);
 }
 
 
@@ -62,20 +63,20 @@ object eval_arg(object A)
         return A;
     }
 
-/*
-    if ( A->type==SFS_PAIR && ( (car(A))->type != SFS_SYMBOL) )
-    {
-        output=make_pair();
-        output->this.pair.car=eval_arg(car(A));
-        output->this.pair.cdr=eval_arg(cdr(A));
-    }
-    else
-    {
-        output=sfs_eval(A);
-    }
+    /*
+        if ( A->type==SFS_PAIR && ( (car(A))->type != SFS_SYMBOL) )
+        {
+            output=make_pair();
+            output->this.pair.car=eval_arg(car(A));
+            output->this.pair.cdr=eval_arg(cdr(A));
+        }
+        else
+        {
+            output=sfs_eval(A);
+        }
 
-    return output;
-*/
+        return output;
+    */
 }
 
 
@@ -235,7 +236,7 @@ object prim_string(object A)
     return prim_predicat(A,SFS_STRING);
 }
 
-object prim_pair(object A)
+object prim_pair(object  A)
 {
     return prim_predicat(A,SFS_PAIR);
 }
@@ -262,7 +263,7 @@ object prim_minfty(object A)
 
 object prim_quotient(object Liste)
 {
-     if (prim_integer(Liste)==false)
+    if (prim_integer(Liste)==false)
     {
         WARNING_MSG("Entrez un entier plutot c'est mieux");
         return Error;
@@ -304,7 +305,7 @@ object prim_remainder(object Liste)
     if (test==nil)
     {
         WARNING_MSG("Pas assez d'élément");
-         return Error;
+        return Error;
     }
     object B=car(test);
 
@@ -391,9 +392,10 @@ object prim_sup( object Liste )
 
 object prim_conv_intchar(object Liste)
 {
+    DEBUG_MSG("int->char");
     if (cdr(Liste)!=nil)
     {
-        WARNING_MSG("Trop d'element");
+        WARNING_MSG("Too many arguments for integer->char");
         return Error;
     }
 
@@ -404,36 +406,50 @@ object prim_conv_intchar(object Liste)
     {
         if ( (A->this.number.numtype == NUM_INTEGER)  || (A->this.number.numtype == NUM_UINTEGER))
         {
-             a=(A->this.number.this.integer);
-             if ( (a>-1) && (a<256) )
-             {
-                 return (make_character(a));
-             }
-       }
+            a=(A->this.number.this.integer);
+            if ( (a>-1) && (a<256) )
+            {
+                return (make_character(a));
+            }
+            else
+            {
+                WARNING_MSG("Character unknown");
+                return Error;
+            }
+        }
     }
-    WARNING_MSG("Integer->charactere impossible");
+    WARNING_MSG("Argument of integer->char is not a number");
     return Error;
 }
 
 
 object prim_conv_charint(object Liste)
 {
+    DEBUG_MSG("char->integer");
     if (cdr(Liste)!=nil)
     {
+        DEBUG_MSG("Trop d'arguments");
         WARNING_MSG("Too many arguments for charactere->integer");
         return Error;
     }
 
     object A=car(Liste);
-    int a;
+    char a;
 
     if  (A->type == SFS_CHARACTER)
     {
+        DEBUG_MSG("type=character");
         a=A->this.character;
         return (make_integer(a));
     }
-    WARNING_MSG("Charactere->integer impossible");
-    return Error;
+
+    else
+    {
+        WARNING_MSG("Charactere->integer impossible");
+        return Error;
+    }
+
+
 }
 
 object prim_conv_symbstr(object Liste)
@@ -550,13 +566,24 @@ object prim_conv_numstr(object Liste)
 
 object prim_cons(object Liste)
 {
+    DEBUG_MSG("CONS");
+    if (car(Liste)==nil)
+    {
+        WARNING_MSG("2 Arguments missing for CONS");
+        return Error;
+    }
+    if (cdr(Liste)==nil)
+    {
+        WARNING_MSG("1 Argument missing for CONS");
+        return Error;
+    }
     object res=make_pair();
     res->this.pair.car=car(Liste);
     res->this.pair.cdr=car(cdr(Liste));
     if ( cdr(cdr(Liste)) != nil )
     {
-        WARNING_MSG("Trop d'elements pour cons");
-        res=Error;
+        WARNING_MSG("Too many arguments for cons");
+        return Error;
     }
     return res;
 }
@@ -743,3 +770,41 @@ object prim_abs(object Liste)
     }
     return res;
 }
+
+
+object prim_round (object Liste)
+{
+    DEBUG_MSG("Round");
+
+    if (cdr(Liste)!=nil)
+    {
+        WARNING_MSG("Too many arguments for round");
+    }
+
+    object A=car(Liste);
+
+    if (A->type != SFS_NUMBER)
+    {
+        WARNING_MSG("Argument of round is not a number");
+        return NULL;
+    }
+    num B=A->this.number;
+    uint ta=B.numtype;
+
+    if (ta==NUM_REAL)
+    {
+        int a=B.this.real;
+        return (make_integer(a));
+    }
+    else
+    {
+        return A;
+    }
+}
+
+
+
+
+
+
+

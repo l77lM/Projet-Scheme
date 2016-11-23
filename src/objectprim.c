@@ -280,15 +280,33 @@ object prim_predicat_number(object Liste,uint type)
     }
 
     object test=Liste;
+    object A=nil;
 
     while (test!=nil)
     {
-        if (car(test)==Error)
+        A=car(test);
+        if ( A->type != SFS_NUMBER )
         {
-            return Error;
+            DEBUG_MSG("Argument de predicat num est pas un num");
+            return false;
         }
 
-        if ( car(test)->this.number.numtype != type)
+        if (  (type==NUM_INTEGER)  && (A->this.number.numtype==NUM_REAL) )
+        {
+            DEBUG_MSG("(Verif reel=entier)");
+
+            if ( 0 != egalite_num(A,prim_round(test)) )
+            {
+                return false;
+            }
+        }
+
+        else if  (  (type==NUM_REAL)  &&  (  (A->this.number.numtype==NUM_INTEGER) || (A->this.number.numtype==NUM_INTEGER) )  )
+        {
+
+        }
+
+        else if ( car(test)->this.number.numtype != type)
         {
             return false;
         }
