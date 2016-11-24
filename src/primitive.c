@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "primitive.h"
-#include "object.h"
+
 
 void init_primitives(void)
 {
@@ -52,15 +52,16 @@ void init_primitives(void)
 object eval_arg(object A)
 {
     /* Evalue la liste des arguments d'une primitive */
-    object output;
+
     if ( A->type==SFS_NIL )
         return nil;
 
     else
     {
-        A->this.pair.car=sfs_eval(car(A));
-        A->this.pair.cdr=eval_arg(cdr(A));
-        return A;
+        object output=make_pair();
+        output->this.pair.car=sfs_eval(car(A));
+        output->this.pair.cdr=eval_arg(cdr(A));
+        return output;
     }
 
     /*
@@ -487,6 +488,7 @@ object prim_conv_strsymb(object Liste)
 
 object prim_conv_strnum(object Liste)
 {
+    DEBUG_MSG("string->number");
     if (cdr(Liste)!=nil)
     {
         WARNING_MSG("Too many arguments for string->number");
@@ -494,9 +496,15 @@ object prim_conv_strnum(object Liste)
     }
     object A=car(Liste);
     object res=nil;
+
     if  (A->type == SFS_STRING)
     {
-        res=sfs_read_atom(A->this.string);
+        DEBUG_MSG("string->number argument is a string");
+
+        uint ind=0;
+
+        res=sfs_read_atom(A->this.string,&ind);
+
         if (res->type == SFS_NUMBER)
         {
             return res;
@@ -601,11 +609,20 @@ object prim_cdr(object Liste)
 object prim_setcar(object Liste)
 {
     DEBUG_MSG("Set-car!");
+    if (Liste->type != SFS_PAIR)
+    {
+        WARNING_MSG("Bad argument of set-car!");
+        return Error;
+    }
+
     if ( (car(Liste)->type) != SFS_PAIR )
     {
         WARNING_MSG("non-pair argument to set-car!");
         return Error;
     }
+
+    sfs_print_atom(car(Liste));
+
     if ( (cdr(Liste)->type) != SFS_PAIR )
     {
         WARNING_MSG("Immutable argument to set-car!");

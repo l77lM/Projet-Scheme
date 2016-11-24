@@ -6,8 +6,13 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-
+#include "objectprim.h"
+#include "eval.h"
 #include "object.h"
+#include "read.h"
+
+
+
 
 object eval_arg(object A);
 

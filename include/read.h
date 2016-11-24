@@ -17,6 +17,9 @@ extern "C" {
 
 #include <stdio.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "object.h"
 
 enum {S_OK, S_KO, S_END};

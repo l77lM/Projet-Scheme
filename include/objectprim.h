@@ -8,6 +8,7 @@ extern "C" {
 #include <stdio.h>
 
 #include "object.h"
+#include "primitive.h"
 
 
 

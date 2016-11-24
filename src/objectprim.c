@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "objectprim.h"
-#include "object.h"
+
 
 object add_num(object A,object B)
 {

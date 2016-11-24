@@ -16,6 +16,8 @@ extern "C" {
 
 #include "number.h"
 
+#include "mem.h"
+
 
 typedef struct object_t
 {

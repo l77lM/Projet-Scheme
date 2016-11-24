@@ -17,6 +17,7 @@ extern "C" {
 
 
 #include "object.h"
+#include "primitive.h"
 
 object sfs_eval( object input );
 

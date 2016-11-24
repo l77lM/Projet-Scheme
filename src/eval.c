@@ -282,8 +282,10 @@ debut:
 
         else
         {
+
             WARNING_MSG("Fonction inconnue");
             output=Error;
+
             /*
             output->this.pair.car=sfs_eval(car(input));
             output->this.pair.cdr=sfs_eval(cdr(input));

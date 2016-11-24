@@ -7,9 +7,11 @@
  * Printing stuff for SFS.
  */
 
+#include <stdio.h>
+
 #include "print.h"
 
-#include <stdio.h>
+
 
 void sfs_print_atom( object o )
 {

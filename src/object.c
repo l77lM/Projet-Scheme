@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include "object.h"
-#include "mem.h"
 
 
 object make_object( uint type )
