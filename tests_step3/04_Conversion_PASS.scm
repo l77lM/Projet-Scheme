@@ -10,6 +10,9 @@
 (char->integer #\a)
 (char->integer #\space)
 (char->integer #\8)
+(integer->char (char->integer #\8))
+
+
 
 (string->number "1")
 (string->number "128")

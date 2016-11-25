@@ -168,12 +168,88 @@ object mult_num(object A,object B)
         res=make_infty(0);
     }
 
+    else if (   ( ( (ta==NUM_MINFTY) || (ta==NUM_PINFTY) ) && (0==egalite_num(B,make_integer(0))) )  ||  ( ( (tb==NUM_MINFTY) || (tb==NUM_PINFTY) ) && (0==egalite_num(A,make_integer(0))) )  )
+    {
+        res=make_undef();
+    }
 
-    else if (    (ta==NUM_MINFTY )   ||   (tb==NUM_MINFTY )   )
+
+    else if  (ta==NUM_MINFTY )
     {
         /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
-        res=make_infty(-1);
+        int test=compare_num(B,make_integer(0));
+
+        if (test==1)
+        {
+            res=make_infty(-1);
+        }
+        else if (test==-1)
+        {
+            res=make_infty(0);
+        }
+        else
+        {
+            return Error;
+        }
     }
+
+    else if  (ta==NUM_PINFTY )
+    {
+        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
+        int test=compare_num(B,make_integer(0));
+
+        if (test==1)
+        {
+            res=make_infty(0);
+        }
+        else if (test==-1)
+        {
+            res=make_infty(-1);
+        }
+        else
+        {
+            return Error;
+        }
+    }
+
+    else if  (tb==NUM_MINFTY )
+    {
+        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
+        int test=compare_num(A,make_integer(0));
+
+        if (test==1)
+        {
+            res=make_infty(-1);
+        }
+        else if (test==-1)
+        {
+            res=make_infty(0);
+        }
+        else
+        {
+            return Error;
+        }
+    }
+
+    else if  (tb==NUM_PINFTY )
+    {
+        /* Si l'un des deux est -inf (l'autre est fini sinon on est sorti avant) */
+        int test=compare_num(A,make_integer(0));
+
+        if (test==1)
+        {
+            res=make_infty(0);
+        }
+        else if (test==-1)
+        {
+            res=make_infty(-1);
+        }
+        else
+        {
+            return Error;
+        }
+    }
+
 
     else if (    (ta==NUM_PINFTY )   ||   (tb==NUM_PINFTY )   )
     {

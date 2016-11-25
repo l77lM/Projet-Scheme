@@ -51,6 +51,7 @@
 (pair? #\a)
 (pair? '(1 2))
 (pair? (cons 1 2))
+(pair? '(("bonjour") ("bonjour") ("bonjour")))
 
 (real? 'a)
 (real? 45)

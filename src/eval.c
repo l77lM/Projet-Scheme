@@ -12,6 +12,11 @@
 
 object sfs_eval( object input )
 {
+    if (input==Error)
+    {
+        return NULL;
+    }
+
     object output;
     int TEST;
 
@@ -50,6 +55,10 @@ debut:
 
     case SFS_SYMBOL:
         ;
+        DEBUG_MSG("Eval symbol");
+
+        /*    DEBOGAGE    */
+
         object VAL=cherche_symbol(meta_env,input);
         if (VAL != nil)
         {
@@ -57,8 +66,8 @@ debut:
         }
         else
         {
-            WARNING_MSG("La variable n'est pas definie");
-            return Error;
+            WARNING_MSG("Symbol n'est pas definie");
+            return NULL;
         }
         break;
 
@@ -113,6 +122,18 @@ debut:
 
                 if (  0 == est_ident( symb, "define" )  )                              /*  Procédure de la fonction DEFINE  */
                 {
+                    if (cdr(input)==nil)
+                    {
+                        WARNING_MSG("Argument 1 missing for DEFINE");
+                        return Error;
+                    }
+
+                    if (cdr(cdr(input))==nil)
+                    {
+                        WARNING_MSG("Argument 2 missing for DEFINE");
+                        return Error;
+                    }
+
                     object test=is_symb(meta_env,car(cdr(input)));
 
                     if (test == nil)

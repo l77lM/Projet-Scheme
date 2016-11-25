@@ -15,7 +15,6 @@ extern "C" {
 #endif
 
 #include "number.h"
-
 #include "mem.h"
 
 

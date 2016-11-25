@@ -608,10 +608,19 @@ object prim_cdr(object Liste)
 
 object prim_setcar(object Liste)
 {
+
     DEBUG_MSG("Set-car!");
+
     if (Liste->type != SFS_PAIR)
     {
-        WARNING_MSG("Bad argument of set-car!");
+        WARNING_MSG("Unaccepted argument of set-car!");
+        return Error;
+    }
+
+    if (car(Liste) == NULL)
+    {
+        DEBUG_MSG("ERROR");
+        WARNING_MSG("Unaccepted argument for set-car!");
         return Error;
     }
 
@@ -621,13 +630,17 @@ object prim_setcar(object Liste)
         return Error;
     }
 
-    sfs_print_atom(car(Liste));
-
     if ( (cdr(Liste)->type) != SFS_PAIR )
     {
         WARNING_MSG("Immutable argument to set-car!");
         return Error;
     }
+
+    if ( (cdr(cdr(Liste))) != nil )
+    {
+        WARNING_MSG("Too many arguments for set-car!");
+    }
+
 
     (Liste->this.pair.car)->this.pair.car = car(cdr(Liste));
     return car(Liste);
@@ -635,16 +648,34 @@ object prim_setcar(object Liste)
 
 object prim_setcdr(object Liste)
 {
-    DEBUG_MSG("Set_cdr!");
+    if (Liste->type != SFS_PAIR)
+    {
+        WARNING_MSG("Unaccepted argument of set-car!");
+        return Error;
+    }
+
+    if (car(Liste) == NULL)
+    {
+        DEBUG_MSG("ERROR");
+        WARNING_MSG("Unaccepted argument for set-car!");
+        return Error;
+    }
+
     if ( (car(Liste)->type) != SFS_PAIR )
     {
         WARNING_MSG("non-pair argument to set-car!");
         return Error;
     }
+
     if ( (cdr(Liste)->type) != SFS_PAIR )
     {
         WARNING_MSG("Immutable argument to set-car!");
         return Error;
+    }
+
+    if ( (cdr(cdr(Liste))) != nil )
+    {
+        WARNING_MSG("Too many arguments for set-car!");
     }
 
     (Liste->this.pair.car)->this.pair.cdr = car(cdr(Liste));

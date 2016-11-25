@@ -62,7 +62,7 @@ void sfs_print_atom( object o )
             printf("#\\newline");
         }
 
-        else if (car<32)
+        else if (  (car<32) ||  (car>126)  )
         {
             printf("#\\");
         }
