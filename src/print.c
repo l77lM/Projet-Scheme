@@ -18,6 +18,12 @@ void sfs_print_atom( object o )
 
     switch (o->type)
     {
+    case SFS_COMPOUND:
+        printf("#<procedure>");
+        break;
+
+
+
     case SFS_NUMBER:
 
         switch (((o->this).number).numtype)
@@ -168,6 +174,8 @@ void sfs_print( object o )
 
         sfs_print_atom( o );
     }
+
+    fflush(stdout);
 
 }
 

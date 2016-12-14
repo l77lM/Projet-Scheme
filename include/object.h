@@ -44,6 +44,15 @@ typedef struct object_t
             struct object_t* (*function)(struct object_t*);
         } primitive;
 
+        struct
+        {
+            struct object_t* parms;
+            struct object_t* body;
+            struct object_t* envt;
+
+        }compound;
+
+
     } this;
 
 } *object;
@@ -80,9 +89,9 @@ object car(object paire);
 object cdr(object paire);
 
 
-object predicat(object A);              /* Fonctions liées à if   */
-object consequence(object A);
-object alternative(object A);
+object predicat(object A, object env);              /* Fonctions liées à if   */
+object consequence(object A, object env);
+object alternative(object A, object env);
 
 
 object exist_symb(char* nomsymb);       /* Fonctions liées à la table de symbole */
@@ -94,6 +103,12 @@ char* symbol(object symb);
 
 object cherche_erreur(object A);
 
+object make_compound(object parms, object body, object envt);    /* Fonctions liées aux lambda */
+
+object let_lambda(object A,object env);
+object ajout_liste(object L, object A);
+
+
 
 #define SFS_NUMBER       0x00
 #define SFS_CHARACTER    0x01
@@ -103,6 +118,7 @@ object cherche_erreur(object A);
 #define SFS_BOOLEAN      0x05
 #define SFS_SYMBOL       0x06
 #define SFS_PRIMITIVE    0x07
+#define SFS_COMPOUND     0x08
 
 
 
@@ -115,6 +131,8 @@ extern object false;
 extern object empty_list;
 
 extern object meta_env;
+
+extern object env_courant;
 
 extern object table_symbol;
 

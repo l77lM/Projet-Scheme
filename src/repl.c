@@ -36,6 +36,7 @@ object true;
 object false;
 object empty_list;
 object meta_env;
+object env_courant;
 object table_symbol;
 object Error;
 
@@ -48,6 +49,7 @@ void init_interpreter ( void ) {
     Error    = NULL;
 
     meta_env = make_pair();
+    env_courant=make_newENV(meta_env);
     table_symbol=make_pair();
 
     init_table();
@@ -106,6 +108,7 @@ int main ( int argc, char *argv[] ) {
     }
 
 
+
     while ( 1 ) {
         input[0]='\0';
         here = 0;
@@ -157,7 +160,7 @@ int main ( int argc, char *argv[] ) {
             continue ;
         }
 
-        output = sfs_eval( sexpr );
+        output = sfs_eval( sexpr, env_courant);
 
         if( NULL == output) {
             /* si fichier alors on sort*/

@@ -19,7 +19,7 @@ extern "C" {
 #include "object.h"
 #include "primitive.h"
 
-object sfs_eval( object input );
+object sfs_eval( object input , object env);
 
 #ifdef __cplusplus
 }

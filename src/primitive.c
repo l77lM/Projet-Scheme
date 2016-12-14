@@ -26,6 +26,7 @@ void init_primitives(void)
     save_primitive("real?",prim_real);
     save_primitive("pinfty?",prim_pinfty);
     save_primitive("minfty?",prim_minfty);
+    save_primitive("procedure?",prim_proc);
 
     save_primitive("integer->char",prim_conv_intchar);
     save_primitive("char->integer",prim_conv_charint);
@@ -49,7 +50,7 @@ void init_primitives(void)
 
 
 
-object eval_arg(object A)
+object eval_arg(object A, object env)
 {
     /* Evalue la liste des arguments d'une primitive */
 
@@ -59,8 +60,8 @@ object eval_arg(object A)
     else
     {
         object output=make_pair();
-        output->this.pair.car=sfs_eval(car(A));
-        output->this.pair.cdr=eval_arg(cdr(A));
+        output->this.pair.car=sfs_eval(car(A), env);
+        output->this.pair.cdr=eval_arg(cdr(A), env);
         return output;
     }
 
@@ -260,6 +261,11 @@ object prim_pinfty(object A)
 object prim_minfty(object A)
 {
     return prim_predicat_number(A,NUM_MINFTY);
+}
+
+object prim_proc(object A)
+{
+    return prim_predicat(A,SFS_COMPOUND);
 }
 
 object prim_quotient(object Liste)
@@ -560,7 +566,7 @@ object prim_conv_numstr(object Liste)
             return make_string("-inf");
         }
 
-        char* str;
+        char str[415];
         sprintf(str,"%g", num);
         return make_string(str);
 

@@ -15,7 +15,7 @@ extern "C" {
 
 
 
-object eval_arg(object A);
+object eval_arg(object A, object env);
 
 object save_primitive( char* nom, object (*ptrPrim)(object) );
 void init_primitives(void);
@@ -41,6 +41,7 @@ object prim_integer(object A);
 object prim_real(object A);
 object prim_pinfty(object A);
 object prim_minfty(object A);
+object prim_proc(object A);
 
 object prim_egalite( object Liste );
 object prim_sup( object Liste );

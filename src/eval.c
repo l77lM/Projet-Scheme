@@ -10,8 +10,15 @@
 #include "eval.h"
 #include "object.h"
 
-object sfs_eval( object input )
+object sfs_eval( object input, object env )
 {
+
+
+    DEBUG_MSG("input %p %d", input, input->type);
+ /*   printf("EVAL ****");
+    sfs_print(input);
+    printf("***\n");  */
+
     if (input==Error)
     {
         return NULL;
@@ -59,7 +66,8 @@ debut:
 
         /*    DEBOGAGE    */
 
-        object VAL=cherche_symbol(meta_env,input);
+        object VAL=cherche_symbol(env,input);
+
         if (VAL != nil)
         {
             return (cdr(VAL));
@@ -76,11 +84,29 @@ debut:
 
         object gauche=car(input);
 
-
-        if (gauche->type==SFS_SYMBOL)
+        if (gauche->type==SFS_PAIR)
         {
-            object NoeudPrim=cherche_symbol(meta_env,gauche);
+            if (car(gauche)->type==SFS_SYMBOL)
+            {
+                if ( 0 == est_ident( symbol(car(gauche)), "lambda" ))
+                {
+                    DEBUG_MSG("lambda detecté aprés 2 parenthese");
+                    input->this.pair.car=sfs_eval(gauche, env);
+                    output=sfs_eval(input, env);
 
+                }
+                else
+                {
+                    WARNING_MSG("Two paranthesis = not good !");
+                    return Error;
+                }
+            }
+        }
+
+
+        else if (gauche->type==SFS_SYMBOL)
+        {
+            object NoeudPrim=cherche_symbol(env,gauche);
 
 
             if (  (NoeudPrim != nil)   &&   (cdr(NoeudPrim))->type == SFS_PRIMITIVE   )  /*  CAS DES PRIMITIVES */
@@ -89,8 +115,8 @@ debut:
                 ptrPrim=(cdr(NoeudPrim))->this.primitive.function;
 
                 object Liste=cdr(input);
-                Liste=eval_arg(Liste);
-                if (Liste==nil)
+                Liste=eval_arg(Liste, env);
+                if (Liste==nil)               /* Respect de la norma quand pas d'argument */
                 {
                     WARNING_MSG("Argument missing");
                     if (est_ident(symbol(gauche),"+")==0 )
@@ -116,65 +142,100 @@ debut:
                 output=(*ptrPrim)(Liste);
             }
 
+            else if (  (NoeudPrim != nil)   &&   (cdr(NoeudPrim))->type == SFS_COMPOUND   )    /*  Evaluation d'un symbole associé à une fonction LAMBDA */
+            {
+                input->this.pair.car=cdr(NoeudPrim);
+                goto debut;
+            }
+
             else
             {
                 char*symb=gauche->this.symbol;
 
-                if (  0 == est_ident( symb, "define" )  )                              /*  Procédure de la fonction DEFINE  */
+                if (  0 == est_ident( symb, "define" )  )                        /*  Procédure de la fonction DEFINE  */
                 {
-                    if (cdr(input)==nil)
+                    object arg1=car(cdr(input));
+                    object arg2=car(cdr(cdr(input)));
+
+                    if (arg1==Error)
                     {
                         WARNING_MSG("Argument 1 missing for DEFINE");
                         return Error;
                     }
 
-                    if (cdr(cdr(input))==nil)
+                    if (arg2==Error)
                     {
                         WARNING_MSG("Argument 2 missing for DEFINE");
                         return Error;
                     }
 
-                    object test=is_symb(meta_env,car(cdr(input)));
-
-                    if (test == nil)
+                    if (arg1->type==SFS_PAIR)                                /* Deuxieme definition d'une fonction lambda */
                     {
-                        object var=car(cdr(input));
+                        if ( car(arg1)->type != SFS_SYMBOL)
+                        {
+                            WARNING_MSG("Wrong definition of lambda");
+                            return Error;
+                        }
+                        else
+                        {
+                            object nomProc=car(arg1);
+                            object varProc=cdr(arg1);
+                            object corpProc=arg2;
+                            add_symb(env,nomProc,make_compound(varProc,corpProc,env));
+                            output=nomProc;
+                        }
 
-                        object val= sfs_eval(car(cdr(cdr(input))));  /* Evalue la valeur implémentée */
+                    }
+                    else if (arg1->type == SFS_SYMBOL)
+                    {
+                        object test=is_symb(meta_env,car(cdr(input)));   /* Permet de ne pas modidier de symbole associé aux formes ou primitives */
 
-                        add_symb(meta_env,var,val);
+                        if (test != nil)
+                        {
+                            WARNING_MSG("Not the rights to define this symbol");
+                            return Error;
+                        }
 
-                        /*sfs_print_env(meta_env);*/    /* Affiche l'environnement */
+                        test=is_symb(env,car(cdr(input)));
 
-                        output=var;
+                        if (test == nil)
+                        {
+                            object var=car(cdr(input));
+
+                            object val= sfs_eval(car(cdr(cdr(input))), env);
+
+                            add_symb(env,var,val);
+
+                            output=var;
+                        }
+                        else
+                        {
+                            test->this.pair.cdr= sfs_eval(car(cdr(cdr(input))), env);
+                            output=(car(cdr(input)));
+                        }
+
+
+                        if(cdr(cdr(cdr(input)))!=nil)
+                        {
+                            WARNING_MSG("Too many arguments for DEFINE");
+                            output=Error;
+                        }
                     }
                     else
                     {
-                        test->this.pair.cdr= sfs_eval(car(cdr(cdr(input))));
-                        /*output=cdr(test);*/
-                        output=(car(cdr(input)));
-                        /*sfs_print_env(env);*/    /* Affiche l'environnement */
-                    }
-
-
-                    if(cdr(cdr(cdr(input)))!=nil)
-                    {
-                        WARNING_MSG("Too many arguments for DEFINE");
-                        output=Error;
+                        WARNING_MSG("Impossible to define this argument");
+                        return Error;
                     }
                 }
 
                 else if  (  0 == est_ident( symb, "set!" )  )                           /*  SET! */
                 {
 
-                    object test=cherche_symbol(meta_env,car(cdr(input)));
+                    object test=cherche_symbol(env,car(cdr(input)));
                     if (test!=nil)
                     {
-                        /*free(test->this.pair.cdr);*/
-                        test->this.pair.cdr=sfs_eval(car(cdr(cdr(input))));
+                        test->this.pair.cdr=sfs_eval(car(cdr(cdr(input))), env);
                         output=cdr(test);
-
-                        /*sfs_print_env(meta_env);*/    /* Affiche l'environnement */
                     }
                     else
                     {
@@ -183,7 +244,6 @@ debut:
                     }
                 }
 
-
                 else if  (  0 == est_ident( symb, "quote" )  )                           /*  QUOTE  */
 
                 {
@@ -191,26 +251,48 @@ debut:
                 }
 
 
-                else if  (  0== est_ident( symb, "if" )  )              /*  IF  */
+                else if  (  0 == est_ident( symb, "if" )  )              /*  IF  */
                 {
-                    object test=sfs_eval(predicat(input));
+                    if (cdr(input)==nil)
+                    {
+                        WARNING_MSG("Argument 1 missing in 'if'");
+                        return Error;
+                    }
+
+                    object pred=predicat(input, env);
+                    if(pred==Error)
+                    {
+                        WARNING_MSG("Error on predicat in 'if'");
+                        return Error;
+                    }
+
+                    object test=sfs_eval(pred, env);
 
                     if ( test == true )
                     {
                         /*output=sfs_eval(consequence(input),env);*/
-                        input=consequence(input);
+                        input=consequence(input, env);
+                        if (input==Error)
+                        {
+                            WARNING_MSG("Consequence missing in 'if'");
+                            return Error;
+                        }
+
                         goto debut;
                     }
                     else if ( test == false )
                     {
-                        if ( alternative(input) != nil)
+                        object test2=alternative(input, env);
+
+                        if ( test2 != Error)
                         {
-                            /*output=sfs_eval(alternative(input),env);*/
-                            input=alternative(input);
+                            input=test2;
                             goto debut;
                         }
+
                         else
                         {
+
                             output=false;
                         }
                     }
@@ -219,7 +301,6 @@ debut:
                         WARNING_MSG("Le prédicat n'est pas un booléen");
                         return Error;
                     }
-
                 }
 
 
@@ -280,13 +361,66 @@ debut:
 
                 }
 
+                else if  (  0 == est_ident( symb, "begin" )  )                           /*  BEGIN  */
+                {
+                    if ( cdr(input)==nil )
+                    {
+                        WARNING_MSG("Not enough argument for BEGIN\n");
+                        return Error;
+                    }
+                    object res=nil;
+                    object test=cdr(input);
+                    while (test!=nil)
+                    {
+                        res=sfs_eval(car(test), env);
+                        test=cdr(test);
+                    }
+                    return res;
+                }
+
+                else if  (  0 == est_ident( symb, "lambda" )  )                           /*  LAMBDA  */
+                {
+                    DEBUG_MSG("lambda détecté aprés 1 paranthese");
+                    if ( cdr(input)==nil )
+                    {
+                        WARNING_MSG("Not enough argument for LAMBDA\n");
+                        return Error;
+                    }
+                    if ( cdr(cdr(input))==nil )
+                    {
+                        WARNING_MSG("Not enough argument for LAMBDA\n");
+                        return Error;
+                    }
+                    object parms=car(cdr(input));
+                    object body=car(cdr(cdr(input)));
+
+                    return make_compound(parms,body,env);
+                }
+
+                else if  (  0 == est_ident( symb, "let" )  )                           /*  LET  */
+
+                {
+                    object rep=let_lambda(cdr(input),env);
+
+                    if (rep==Error)
+                    {
+                        return Error;
+                    }
+                    else
+                    {
+                        output=sfs_eval(rep,env);
+                    }
+                }
+
+
+
                 else
                 {
-                    object test=cherche_symbol(meta_env,gauche);
+                    object test=cherche_symbol(env,gauche);
                     if (test != nil)
                     {
-                        output->this.pair.car=sfs_eval(car(input));
-                        output->this.pair.cdr=sfs_eval(cdr(input));
+                        output->this.pair.car=sfs_eval(car(input), env);
+                        output->this.pair.cdr=sfs_eval(cdr(input), env);
                     }
                     else
                     {
@@ -301,15 +435,52 @@ debut:
 
         }
 
+        else if (gauche->type==SFS_COMPOUND)
+        {
+            DEBUG_MSG("Evaluation of lambda");
+            object fonct=gauche;
+
+            object env_local=fonct->this.compound.envt;
+            env_local=make_newENV(env_local);
+
+            object param=fonct->this.compound.parms;
+
+
+            object var=cdr(input);
+
+            while (param!=nil)
+            {
+                if (var!=nil)
+                {
+                    add_symb(env_local,car(param),sfs_eval(car(var),env));
+                    param=cdr(param);
+                    var=cdr(var);
+                }
+                else
+                {
+                    WARNING_MSG("Not Enough Arguments for the function");
+                    return Error;
+                }
+            }
+
+            if (var!=nil)
+            {
+                WARNING_MSG("Too many arguments for the function");
+            }
+
+            output=sfs_eval(fonct->this.compound.body, env_local);
+
+        }
+
         else
         {
 
-            WARNING_MSG("Fonction inconnue");
+            WARNING_MSG("Unknown Function");
             output=Error;
 
             /*
-            output->this.pair.car=sfs_eval(car(input));
-            output->this.pair.cdr=sfs_eval(cdr(input));
+            output->this.pair.car=sfs_eval(car(input), env);
+            output->this.pair.cdr=sfs_eval(cdr(input), env);
             */
         }
 
@@ -319,5 +490,5 @@ debut:
 
     }
 
-    return nil ; /*fonction doit renvoyer dans tous les cas un objet*/
+    return Error ; /*fonction doit renvoyer dans tous les cas un objet*/
 }

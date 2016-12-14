@@ -645,7 +645,6 @@ object sfs_read_pair( char *stream, uint *i )
     }
 
     (pair->this.pair.cdr)= sfs_read_pair(stream,i);
-    DEBUG_MSG("fin read_pair");
     return pair;
 }
 

@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "object.h"
+#include "eval.h"
 
 
 object make_object( uint type )
@@ -229,7 +230,7 @@ object make_newENV(object env)
 
 object add_symb(object env,object var,object val)
 {
-    /* Cette fonction ajoute un symbole en début d'environement (masquage) et retourne l'adresse de la paire contenant la variable et sa valeur */
+    /* Cette fonction ajoute un symbole en début d'environement et retourne l'adresse de la paire contenant la variable et sa valeur */
 
     object VAR= make_pair();
     object newnoeud= make_pair();
@@ -251,8 +252,14 @@ object is_symb(object env,object symb)
 {
     /* Chercher un symbole dans UN environnement. Cette fonction retourne l'adresse de la paire contenant le symbol et sa valeur ou nil si le symbol est absent de l'environnement */
 
+    if (symb==Error)
+    {
+        WARNING_MSG("Impossible to find NULL in environment");
+        return Error;
+    }
     object test=nil;
     object ptr=cdr(env);
+
 
     while (ptr!=nil)
     {
@@ -313,7 +320,11 @@ int est_ident(char* c1,char* c2)
 
 object car(object paire)
 {
-    if (paire->type==SFS_PAIR)
+    if (paire==Error)
+    {
+        return Error;
+    }
+    else if (paire->type==SFS_PAIR)
     {
         return paire->this.pair.car;
     }
@@ -326,6 +337,10 @@ object car(object paire)
 
 object cdr(object paire)
 {
+    if (paire==Error)
+    {
+        return Error;
+    }
     if (paire->type==SFS_PAIR)
     {
         return paire->this.pair.cdr;
@@ -340,24 +355,54 @@ object cdr(object paire)
 
 
 
-object predicat(object A)
+object predicat(object A, object env)
 {
-    return (sfs_eval(car(cdr(A))));
+    if (sfs_eval(car(cdr(A)), env) == false)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
-object consequence(object A)
+object consequence(object A, object env)
 {
-    return (sfs_eval(car(cdr(cdr(A)))));
+    DEBUG_MSG("Consequence");
+    object test=car(cdr(cdr(A)));
+    if (test==Error)
+    {
+        return Error;
+    }
+    else
+    {
+        return sfs_eval(test, env);
+    }
+
 }
 
-object alternative(object A)
+object alternative(object A, object env)
 {
+    DEBUG_MSG("Alternative");
+
     object test=cdr(cdr(cdr(A)));
+    if (test==Error)
+    {
+        DEBUG_MSG("Probleme dans alternative");
+        return Error;
+    }
+
     object output=nil;
+
 
     if (test!=nil)
     {
-        output=sfs_eval(car(test));
+        if (car(test)==Error)
+        {
+            return Error;
+        }
+        output=sfs_eval(car(test), env);
         if (cdr(test)!=nil)
         {
             WARNING_MSG("Too many arguments for IF");
@@ -469,5 +514,116 @@ object cherche_erreur(object A)
     {
         DEBUG_MSG("cherche_erreur test");
         return nil;
+    }
+}
+
+
+object make_compound(object parms, object body, object envt)
+{
+    object res=make_object(SFS_COMPOUND);
+    res->this.compound.parms=parms;
+    res->this.compound.body=body;
+    res->this.compound.envt=envt;
+
+    return res;
+}
+
+
+object let_lambda(object A,object env)
+{
+    DEBUG_MSG("LET compound");
+    object corps=car(cdr(A));
+
+    object res=make_pair();
+    object var=make_pair();
+    object val=make_pair();
+    object ptrVar=var;
+    object ptrVal=val;
+
+
+
+
+    object test=car(A);
+    if (car(test)==nil)
+    {
+        WARNING_MSG("No variable definition in LET");
+        return Error;
+    }
+
+    object P1=car(car(test));
+    object P2=car(cdr(car(test)));
+
+
+
+    if (P1==Error || P2==Error)
+    {
+        WARNING_MSG("Wrong definition of variable in LET");
+        return Error;
+    }
+
+    var->this.pair.car=P1;
+    val->this.pair.car=P2;
+
+    test=cdr(test);
+
+
+    while (test!=nil)
+    {
+        P1=car(car(test));
+        P2=car(cdr(car(test)));
+
+        if (P1==Error || P2==Error)
+        {
+            WARNING_MSG("Wrong definition of variable in LET");
+            return Error;
+        }
+
+        ptrVar->this.pair.cdr=make_pair();
+        ptrVal->this.pair.cdr=make_pair();
+
+        ptrVar=cdr(ptrVar);
+        ptrVal=cdr(ptrVal);
+
+        ptrVar->this.pair.car=P1;
+        ptrVal->this.pair.car=P2;
+
+        test=cdr(test);
+    }
+
+    if (cdr(cdr(A))!=nil)
+    {
+        WARNING_MSG("Too many arguments for LET");
+    }
+
+
+    object fonct=make_compound(var,corps,env);
+    res->this.pair.car=fonct;
+    res->this.pair.cdr=val;
+    return res;
+}
+
+object ajout_liste(object L, object A)
+{
+    DEBUG_MSG("ajout liste");
+
+    if (L->type != SFS_PAIR)
+    {
+        object res=make_pair();
+        res->this.pair.car=L;
+        return ajout_liste(L,A);
+    }
+    else
+    {
+        object ptr=L;
+        while (cdr(ptr)!=nil)
+        {
+            ptr=cdr(ptr);
+        }
+        object N=make_pair();
+        N->this.pair.car=A;
+        ptr->this.pair.cdr=N;
+
+        sfs_print(L);
+        return L;
     }
 }
